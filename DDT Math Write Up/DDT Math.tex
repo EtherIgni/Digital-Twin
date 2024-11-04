@@ -15,7 +15,30 @@
 \Large
 \pagebreak
 
-\begin{equation}
-    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{C}}}{2m_{a1}C_p}
-\end{equation}
+\huge
+\[\begin{matrix}
+    \frac{dT_{h}}{dt}=-\frac{\dot{Q_{h}}}{m_{h}C_{ph}}+\frac{V^2R_{h}}{R_{sys}^2}
+    \\
+    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{h}}}{2m_{a1}C_{pc}}-\frac{\dot{m}}{m_{a1}}T_{a1}+\frac{\dot{m}}{m_{a1}}T_{a4}\\
+    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{h}}}{2m_{a2}C_{pc}}-\frac{\dot{m}}{m_{a2}}T_{a2}+\frac{\dot{m}}{m_{a2}}T_{a1}\\
+    \frac{dT_{a1}}{dt}=-\frac{\dot{Q_{ab}}}{2m_{a3}C_{pc}}-\frac{\dot{m}}{m_{a3}}T_{a3}+\frac{\dot{m}}{m_{a3}}T_{a2}\\
+    \frac{dT_{a1}}{dt}=-\frac{\dot{Q_{ab}}}{2m_{a4}C_{pc}}-\frac{\dot{m}}{m_{a4}}T_{a4}+\frac{\dot{m}}{m_{a4}}T_{a3}\\
+    \\
+    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{ab}}}{2m_{b1}C_{pc}}-\frac{\dot{m}}{m_{b1}}T_{b1}+\frac{\dot{m}}{m_{b1}}T_{b4}\\
+    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{ab}}}{2m_{b2}C_{pc}}-\frac{\dot{m}}{m_{b2}}T_{b2}+\frac{\dot{m}}{m_{b2}}T_{b1}\\
+    \frac{dT_{a1}}{dt}=-\frac{\dot{Q_{bc}}}{2m_{b3}C_{pc}}-\frac{\dot{m}}{m_{b3}}T_{b3}+\frac{\dot{m}}{m_{b3}}T_{b2}\\
+    \frac{dT_{a1}}{dt}=-\frac{\dot{Q_{bc}}}{2m_{b4}C_{pc}}-\frac{\dot{m}}{m_{b4}}T_{b4}+\frac{\dot{m}}{m_{b4}}T_{b3}\\
+    \\
+    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{bc}}}{2m_{c1}C_{pc}}-\frac{\dot{m}}{m_{c1}}T_{c1}+\frac{\dot{m}}{m_{c1}}T_{in}\\
+    \frac{dT_{a1}}{dt}=\frac{\dot{Q_{bc}}}{2m_{c2}C_{pc}}-\frac{\dot{m}}{m_{c2}}T_{c2}+\frac{\dot{m}}{m_{c2}}T_{c1}\\
+\end{matrix}\]
+\pagebreak
+
+\[\begin{matrix}
+    \dot{Q_{h}}=-h_{h}A_{h}l_{H}\frac{(T_{a1}-T_{a2})}{ln(\frac{T_{h}-T_{a1}}{T_{h}-T_{a2}})}\\
+    \\
+    \dot{Q_{ab}}=-h_{ab}\pi d_{ab}l_{ab}\frac{(T_{a3}-T_{b2})-(T_{a4}-T_{b1})}{ln(\frac{T_{a3}-T_{b2}}{T_{a4}-T_{b1}})}\\
+    \\
+    \dot{Q_{bc}}=-h_{bc}\pi d_{bc}l_{bc}\frac{(T_{b3}-T_{c2})-(T_{b4}-T_{c1})}{ln(\frac{T_{b3}-T_{c2}}{T_{b4}-T_{c1}})}\\
+\end{matrix}\]
 \end{document}
