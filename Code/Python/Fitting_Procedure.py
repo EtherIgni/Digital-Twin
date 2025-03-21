@@ -115,7 +115,7 @@ input_data       = np.genfromtxt("Data/Input_Filtered.txt",      delimiter=" ").
 flow_data        = np.genfromtxt("Data/Flow_Meter_Filtered.txt", delimiter=" ").reshape((4,-1))
 temperature_data = np.genfromtxt("Data/Temp_Filtered.txt",       delimiter=" ").reshape((9,-1))
 
-power_curve  = np.interp(temperature_data[-1],input_data[-1],input_data[3])
+power_curve  = np.interp(temperature_data[-1],input_data[-1],input_data[3])*2
 flow_curve_1 = np.interp(temperature_data[-1],flow_data[-1],flow_data[0])
 flow_curve_2 = np.interp(temperature_data[-1],flow_data[-1],flow_data[1])
 flow_curve_3 = np.interp(temperature_data[-1],flow_data[-1],flow_data[2])
@@ -195,19 +195,37 @@ node_names=["1-1",
             "2-2",
             "Out"]
 
-fig, axes = plt.subplots(1)
+
 
 for i in range(7):
-    plt.plot(time, data[:,i]-C_to_K, color=colors[i], label="Calc: "+node_names[i])
-    axes.plot(time, temps_to_compare[i]-C_to_K, color=colors[i], label="True: "+node_names[i], linestyle="dashed")
-axes.plot(time, temperature_data[6]-C_to_K, color="black", label="True: Inlet", linestyle="dotted")
-axes.legend()
+    plt.plot(time, data[:,i]-C_to_K, color=colors[i], label="Calc: "+node_names[i], linestyle="dashed")
+    plt.plot(time, temps_to_compare[i]-C_to_K, color=colors[i], label="True: "+node_names[i])
+plt.plot(time, temperature_data[6]-C_to_K, color="black", label="True: Inlet", linestyle="dotted")
+plt.legend()
+plt.xlabel("Time (s)",fontsize=20)
+plt.ylabel("Temperature (C)",fontsize=20)
+plt.title("Model Vs True Data",fontsize=20)
+plt.show()
 
-# for i in range(3):
-#     axes[1].plot(time, mass_flow_rates[i], color=colors[i], label="True: "+str(i), linestyle="dotted")
-# axes[1].legend()
+for i in range(7):
+    plt.plot(time, temps_to_compare[i]-C_to_K, color=colors[i], label="Node "+node_names[i])
+plt.plot(time, temperature_data[6]-C_to_K, color="black", label="Node Inlet", linestyle="dotted")
+plt.legend()
+plt.xlabel("Time (s)",fontsize=20)
+plt.ylabel("Temperature (C)",fontsize=20)
+plt.title("Temperature Data",fontsize=20)
+plt.show()
 
-# axes[2].plot(time, power_curve, color="orange", label="True: "+str(i), linestyle="dotted")
-# axes[2].legend()
+for i in range(3):
+    plt.plot(time, mass_flow_rates[i], color=colors[i], label="Loop "+str(i+1))
+plt.legend()
+plt.xlabel("Time (s)",fontsize=20)
+plt.ylabel("Flow Rate (Kg/s)",fontsize=20)
+plt.title("Mass Flow Rates",fontsize=20)
+plt.show()
 
+plt.plot(time, power_curve, color="orange")
+plt.xlabel("Time (s)",fontsize=20)
+plt.ylabel("Power In (% of max)",fontsize=20)
+plt.title("Percent Power In",fontsize=20)
 plt.show()

@@ -73,7 +73,8 @@ def plot_File(data,
 
 #---Mass Flow Data---
 #Sets an averaging convolution filter for the data
-data_filter=averaging_Filter(200,13)
+data_filter_av = averaging_Filter(200,13)
+data_filter_lp = lowpass_Filter(1,1000,3)
 
 #Reads data from file
 data_file     = TdmsFile.read("Data/FlowMeters.tdms")
@@ -90,13 +91,18 @@ flow_data     = flow_data[:,:33985]
 flow_data[-1] = flow_data[-1] - 284555982
 
 #Filters data
-filtered_flow_data = np.zeros(flow_data.shape)
+filtered_flow_data_type_1 = np.zeros(flow_data.shape)
 for i in range(flow_data.shape[0]-1):
-    filtered_flow_data[i] = data_filter(flow_data[i])
-filtered_flow_data[-1]=flow_data[-1]
+    filtered_flow_data_type_1[i] = data_filter_av(flow_data[i])
+filtered_flow_data_type_1[-1]=flow_data[-1]
+
+filtered_flow_data_type_2 = np.zeros(flow_data.shape)
+for i in range(flow_data.shape[0]-1):
+    filtered_flow_data_type_2[i] = data_filter_lp(flow_data[i])
+filtered_flow_data_type_2[-1]=flow_data[-1]
 
 #Saves processed data to a text file
-filtered_flow_data.tofile("Data/Flow_Meter_Filtered.txt", sep=' ')
+filtered_flow_data_type_1.tofile("Data/Flow_Meter_Filtered.txt", sep=' ')
 
 #Plots the unfiltered data
 plot_File(flow_data,
@@ -108,12 +114,21 @@ plot_File(flow_data,
           True)
 
 #Plots the filtered data
-plot_File(filtered_flow_data,
+plot_File(filtered_flow_data_type_1,
           ["Flow in Loop 1", "Flow in Loop 2", "Flow in Loop 3"],
           ["red", "green", "blue"],
           "Mass Flow Rates",
           "Flow Rate (Gal/min)",
           "Images/Data Set 1/Mass Flow Rates AV Filter.png",
+          True)
+
+#Plots the filtered data
+plot_File(filtered_flow_data_type_2,
+          ["Flow in Loop 1", "Flow in Loop 2", "Flow in Loop 3"],
+          ["red", "green", "blue"],
+          "Mass Flow Rates",
+          "Flow Rate (Gal/min)",
+          "Images/Data Set 1/Mass Flow Rates LP Filter.png",
           True)
 
 
@@ -167,7 +182,7 @@ temp_data[-1]=temp_data[-1]-284555982
 #Filters data
 filtered_temp_data=np.zeros(temp_data.shape)
 for i in range(temp_data.shape[0]-1):
-    filtered_temp_data[i]=data_filter(temp_data[i])
+    filtered_temp_data[i]=data_filter_av(temp_data[i])
 filtered_temp_data[-1]=temp_data[-1]
 
 #Saves processed data to a text file
