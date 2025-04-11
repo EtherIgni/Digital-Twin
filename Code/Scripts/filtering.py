@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.ndimage import convolve1d
-import os
 import pandas as pd
 
 data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
