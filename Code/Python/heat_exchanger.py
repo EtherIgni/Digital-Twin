@@ -99,47 +99,114 @@ plt.show()
 
 
 
+heat_exchanger_positions   = np.array([[3.2512,0],
+                                       [2.4257,0.3302]])
+heat_exchanger_main_length = 0.5207
+heat_exchanger_cap_length  = 0.0889
+heat_exchanger_areas       = np.array([0.00191598766,
+                                       0.00191598766])
+heat_exchanger_cap_area    = 0.00383197531
+num_nodes_in_exchanger     = np.array([50,50])
+heat_exchange_coefficients = np.array([68,68])
+
+heater_length              = 1.143
+heater_area                = 0.004188254 
+
+large_tank_length          = 0.762
+large_tank_area            = 0.0791730436
+
+small_tank_length          = 0.6223
+small_tank_area            = 0.00809921437
+
+
+pipe_lengths_1             = [1.1176,1.3716,2.8448,1.27]
+pipe_lengths_2             = [0.6858,0.5969,2.7178]
+pipe_lengths_3             = [0.3302,0.762]
+pipe_area                  = 0.00053652265
+
+
+
 segment_lengths            = [None]*num_loops
 num_nodes_in_segment       = [None]*num_loops
 segment_areas              = [None]*num_loops
 initial_temps              = [None]*num_loops
 thermo_probe_positions     = [None]*num_loops
 
-heat_exchanger_positions   = np.array([[5.5,0],
-                                       [3,2]])
 
-heat_exchanger_lengths     = np.array([1,1])
 
-num_nodes_in_exchanger     = np.array([50,50])
+segment_lengths[0]         = np.array([heater_length,
+                                       pipe_lengths_1[0],
+                                       large_tank_length,
+                                       pipe_lengths_1[1],
+                                       heat_exchanger_cap_length,
+                                       heat_exchanger_main_length,
+                                       heat_exchanger_cap_length,
+                                       pipe_lengths_1[2],
+                                       large_tank_length,
+                                       pipe_lengths_1[3]])
+segment_areas[0]           = np.array([heater_area,
+                                       pipe_area,
+                                       large_tank_area,
+                                       pipe_area,
+                                       heat_exchanger_cap_area,
+                                       heat_exchanger_areas[0],
+                                       heat_exchanger_cap_area,
+                                       pipe_area,
+                                       large_tank_area,
+                                       pipe_area])
+num_nodes_in_segment[0]    = np.array([50,
+                                       25,
+                                       25,
+                                       25,
+                                       10,
+                                       50,
+                                       10,
+                                       25,
+                                       25,
+                                       25])
 
-heat_exchange_coefficients = np.array([680,680])
+segment_lengths[1]         = np.array([heat_exchanger_main_length,
+                                       pipe_lengths_2[0],
+                                       small_tank_length,
+                                       pipe_lengths_2[1],
+                                       heat_exchanger_cap_length,
+                                       heat_exchanger_main_length,
+                                       heat_exchanger_cap_length,
+                                       pipe_lengths_2[2]])
+segment_areas[1]           = np.array([heat_exchanger_areas[1],
+                                       pipe_area,
+                                       small_tank_area,
+                                       pipe_area,
+                                       heat_exchanger_cap_area,
+                                       heat_exchanger_areas[0],
+                                       heat_exchanger_cap_area,
+                                       pipe_area])
+num_nodes_in_segment[1]    = np.array([50,
+                                       25,
+                                       25,
+                                       25,
+                                       10,
+                                       50,
+                                       10,
+                                       25])
 
-heat_exchanger_areas       = np.array([[0.03,0.03],
-                                       [0.03,0.03]])
-
-heater_length              = 2
-
-heater_area                = 0.005
-
-segment_lengths[0]         = np.array([2,0.5,1,2,heat_exchanger_lengths[0],1,1,0.5])
-segment_lengths[1]         = np.array([heat_exchanger_lengths[0],2,heat_exchanger_lengths[1],2])
-segment_lengths[2]         = np.array([2,heat_exchanger_lengths[1],2])
-
-num_nodes_in_segment[0]    = np.array([50,25,20,25,num_nodes_in_exchanger[0],25,20,25])
-num_nodes_in_segment[1]    = np.array([num_nodes_in_exchanger[0],25,num_nodes_in_exchanger[1],25])
-num_nodes_in_segment[2]    = np.array([25,num_nodes_in_exchanger[1],25])
-
-segment_areas[0]           = np.array([heater_area,0.001,0.01,0.001,heat_exchanger_areas[0,0],0.001,0.01,0.001])
-segment_areas[1]           = np.array([heat_exchanger_areas[0,1],0.001,heat_exchanger_areas[1,0],0.001])
-segment_areas[2]           = np.array([0.001,heat_exchanger_areas[1,1],0.001])
+segment_lengths[2]         = np.array([pipe_lengths_3[0],
+                                       heat_exchanger_main_length,
+                                       pipe_lengths_3[1]])
+segment_areas[2]           = np.array([pipe_area,
+                                       heat_exchanger_areas[1],
+                                       pipe_area])
+num_nodes_in_segment[2]    = np.array([25,
+                                       50,
+                                       25])
 
 initial_temps[0]           = np.array([temperature_data[0,1], temperature_data[0,2], temperature_data[0,3], temperature_data[0,0]])
 initial_temps[1]           = np.array([temperature_data[0,4], temperature_data[0,5]])
 initial_temps[2]           = np.array([temperature_data[0,6], temperature_data[0,7]])
 
-thermo_probe_positions[0]  = np.array([2.1,5,7,8.9])
-thermo_probe_positions[1]  = np.array([2,5])
-thermo_probe_positions[2]  = np.array([1,4])
+thermo_probe_positions[0]  = np.array([1.2827,3.1369,4.0386,8.7249])
+thermo_probe_positions[1]  = np.array([2.2606,3.2131])
+thermo_probe_positions[2]  = np.array([0.0889,1.5494])
 
 
 
@@ -196,18 +263,18 @@ for step in range(1, num_time_intervals):
     
     #Heat Transfer
     for i in range(num_exchangers):
-        exchanger_curve  = np.linspace(0, heat_exchanger_lengths[i], num_nodes_in_exchanger[i])
+        exchanger_curve  = np.linspace(0, heat_exchanger_main_length, num_nodes_in_exchanger[i])
         heat_flux        = heat_exchange_coefficients[i]*(np.interp(exchanger_curve+heat_exchanger_positions[i,0],                           flow_curves[i],   temp_curve[i])-
-                                                          np.interp(heat_exchanger_positions[i,1]+heat_exchanger_lengths[i]-exchanger_curve, flow_curves[i+1], temp_curve[i+1]))
+                                                          np.interp(heat_exchanger_positions[i,1]+heat_exchanger_main_length-exchanger_curve, flow_curves[i+1], temp_curve[i+1]))
         
         for j in range(2):
             sub_grid_indices              = np.where(np.logical_and(flow_curves[j+i]>heat_exchanger_positions[i,j],
-                                                                    flow_curves[j+i]<heat_exchanger_positions[i,j]+heat_exchanger_lengths[i]))[0]
+                                                                    flow_curves[j+i]<heat_exchanger_positions[i,j]+heat_exchanger_main_length))[0]
             next_index                    = np.max(sub_grid_indices)+1 
             
             sub_grid                      = np.ones(sub_grid_indices.size+2)
             sub_grid[0]                   = heat_exchanger_positions[i,j]
-            sub_grid[-1]                  = heat_exchanger_positions[i,j]+heat_exchanger_lengths[i]
+            sub_grid[-1]                  = heat_exchanger_positions[i,j]+heat_exchanger_main_length
             sub_grid[1:-1]                = flow_curves[j+i][sub_grid_indices]
             
             matched_heat_flux             = np.interp(sub_grid-heat_exchanger_positions[i,j], exchanger_curve, heat_flux)
@@ -215,7 +282,7 @@ for step in range(1, num_time_intervals):
                 matched_heat_flux         = np.flip(matched_heat_flux)
             
             
-                exchanger_travel_distance     = np.ones(sub_grid.size-1)*time_diff/(density_water*heat_exchanger_areas[i,j])
+                exchanger_travel_distance     = np.ones(sub_grid.size-1)*time_diff/(density_water*heat_exchanger_areas[j])
                 if(mass_flow_rates[j+i][step-1]>0):
                     transfer_areas            = np.min(np.stack((exchanger_travel_distance,
                                                        (sub_grid[1:]-sub_grid[:-1])/mass_flow_rates[j+i][step-1])),
