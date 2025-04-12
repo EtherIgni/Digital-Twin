@@ -6,6 +6,7 @@ from scipy.interpolate import RBFInterpolator, CubicSpline
 import pandas as pd
 from matplotlib.widgets import Button, Slider
 import time
+import os
 
 
 
@@ -61,7 +62,7 @@ num_exchangers            = 2
 def simulate_data(run_number):
     heater_conversion           = 100
 
-    physical_data               = pd.read_csv(data_folder_file_path+"Run "+str(run_number)+"/Filtered_Data.csv",index_col=False,header=None)
+    physical_data               = pd.read_csv(data_folder_file_path+"Run "+str(run_number)+"/filtered_data.csv",index_col=False,header=None)
     physical_data               = np.array(physical_data)
 
     time_grid                   = physical_data[-100:,0]/1000
@@ -71,7 +72,7 @@ def simulate_data(run_number):
     for i in range(num_loops):
         mass_flow_rates[i]      = physical_data[-100:,i] * Gal_min_to_Kg_s 
 
-    heater_flux                 = input_data[-100:,4]    * heater_conversion
+    heater_flux                 = physical_data[-100:,4] * heater_conversion
 
     temperature_data            = physical_data[-100:,5:]
 
@@ -202,11 +203,11 @@ def simulate_data(run_number):
                                                                                 segment_areas[i])
         
     if(os.path.isfile(data_folder_file_path+"Run "+str(run_number)+"/model_save.csv")):
-            temp_dataframe    = pd.read_csv(data_folder_file_path+"Run "+str(run_number)+"/model_save_.csv")
-            for i in range(num_loops):
-                temp_curve[i] = temp_dataframe.loc[i].to_list()
-                temp_curve[i] = [x for x in temp_curve[i] if str(x) != 'nan']
-                temp_curve[i] = np.array(temp_curve[i])
+        temp_dataframe    = pd.read_csv(data_folder_file_path+"Run "+str(run_number)+"/model_save.csv")
+        for i in range(num_loops):
+            temp_curve[i] = temp_dataframe.loc[i].to_list()
+            temp_curve[i] = [x for x in temp_curve[i] if str(x) != 'nan']
+            temp_curve[i] = np.array(temp_curve[i])[1:]
             
     else:
         initial_temps              = [None]*num_loops
@@ -215,11 +216,11 @@ def simulate_data(run_number):
         initial_temps[2]           = np.array([temperature_data[0,6], temperature_data[0,7]])
         
         for i in range(num_loops):
-            temp_curve[i]    = np.zeros((num_time_intervals,flow_curves[i].size))
-            temp_curve[i][0] = np.interp(flow_curves[i],
-                                        thermo_probe_positions[i],
-                                        initial_temps[i],
-                                        period=loop_lengths[i])
+            temp_curve[i]    = np.interp(flow_curves[i],
+                                         thermo_probe_positions[i],
+                                         initial_temps[i],
+                                         period=loop_lengths[i])
+            print(temp_curve[i].size)
         
 
 
@@ -229,7 +230,8 @@ def simulate_data(run_number):
 
     simulated_probe_temps           = [None]*num_loops
     for i in range(num_loops):
-        simulated_probe_temps[i] = initial_temps[i]
+        simulated_probe_temps[i]    = np.zeros((num_time_intervals,thermo_probe_positions[i].size))
+        simulated_probe_temps[i][0] = np.interp(thermo_probe_positions[i], flow_curves[i], temp_curve[i])
 
     comp_time_initial = time.time()
 
@@ -246,7 +248,7 @@ def simulate_data(run_number):
             if(i==2):
                 keep_indices        = np.where(new_positions<=loop_lengths[i])[0]
                 new_positions       = np.concat([[0],new_positions[keep_indices]])
-                interp_temps        = np.concat([[inlet_temps[step-1]],temp_curve[i][step-1][keep_indices]])
+                interp_temps        = np.concat([[inlet_temps[step-1]],temp_curve[i][keep_indices]])
                 
                 sort_indices        = np.argsort(new_positions)
                 temp_curve[i]       = np.interp(flow_curves[i],
@@ -333,4 +335,4 @@ def simulate_data(run_number):
     data_frame.to_csv(data_folder_file_path+"Run "+str(run_number)+"/simulated_data.csv",mode="a",header=False,index=False)
     
     data_frame =pd.DataFrame.from_records(temp_curve)
-    data_frame.to_csv(data_folder_file_path+"Run "+str(run_number)+"/model_save_.csv")
+    data_frame.to_csv(data_folder_file_path+"Run "+str(run_number)+"/model_save.csv")

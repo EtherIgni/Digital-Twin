@@ -27,5 +27,3 @@ def filter_Data(run_number):
     
     data_frame                          = pd.DataFrame.from_records(filtered_data[-100:])
     data_frame.to_csv(data_folder_file_path+"Run "+str(run_number)+"/filtered_data.csv",mode="a",header=False,index=False)
-
-filter_Data(2)
