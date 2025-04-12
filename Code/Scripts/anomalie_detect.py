@@ -1,112 +1,89 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
-#data_folder_file_path = "C/users/daq-user/documents/labview data/"
-data_folder_file_path = "C:/Users/james/.spyder-py3/assignments/NE_471/"
+# data folder path
+data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 
 def anomaly_detection(run_number):
-    # load physical and model temperature data from .txt
-    # will include time as first column (12 in total)
-    physical_data = np.genfromtxt(data_folder_file_path+"run "+str(run_number)+"/filter_data.txt", delimiter=",")[-100:]
+    # Load physical and model temperature data from .txt
+    physical_data = pd.read_csv(data_folder_file_path + f"run {run_number}/filtered_data.csv", delimiter=",").tail(100).to_numpy()
+    model_data = pd.read_csv(data_folder_file_path + f"run {run_number}/model_data.csv", delimiter=",").tail(100).to_numpy()
     
-    # for model, just the 8 temperature data
-    model_data = np.genfromtxt(data_folder_file_path+"run "+str(run_number)+"/model_data.txt", delimiter=",")[-100:]
+    time = physical_data[:-1, 0].copy().reshape(-1, 1)  # time data
+    physical_temps = physical_data[:-1, 5:].copy()  # physical temperatures
+    model_temps = model_data[:-1, 1:].copy()  # model temperatures
     
-    physical_temps = physical_data[:-1, 3:]  # physical temperatures
-    model_temps = model_data[:-1, 3:]  # model temperatures
+    # Known standard deviation and model error for each probe (example values)
+    # temperatures calibrated with +-0.5 C 
+    std_dev = np.array([0.0288, 0.0337, 0.0260, 0.0483, 0.0330, 0.0288, 0.0316, 0.0398])  # std from noise analysis
+    model_error = np.array([0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01])  # tbd
     
-    #threshold determination
-    threshold = 0.05 # semi placeholder. from uncertainty analysis of temp data
+    # Calculate thresholds for each probe
+    thresholds = std_dev + model_error  # Element-wise addition
     
-    # calculate residuals
+    # Calculate residuals
     residuals = model_temps - physical_temps
     
-    # residuals exceeding threshold
-    flagged_residuals = np.abs(residuals) > threshold
+    # Residuals exceeding thresholds
+    flagged_residuals = np.abs(residuals) > thresholds  # Compare each column with its corresponding threshold
     
     # Check for anomalies over a range
-    # maybe change for the full 10 second range?
-    range_size = 100 #change to what gets to like 5 seconds
-    anomaly_threshold =  40 #Number of flagged residuals to consider as an anomaly. based on binomial distribution
+    range_size = 25  # subject to change
+    anomaly_threshold = 12  # Number of flagged residuals to consider as an anomaly
     
     # Initialize anomaly detection over ranges for each case
     anomalies_range = np.zeros_like(residuals, dtype=bool)
     
-    #populate anomalies_range
+    # Populate anomalies_range
     for j in range(residuals.shape[1]):
-        for i in range(0, len(residuals[:,j]), range_size):
-            end_index = min(i + range_size, len(residuals[:,j]))
-            if np.sum(flagged_residuals[i:end_index,j]) >= anomaly_threshold:
-                anomalies_range[i:end_index,j] = True
+        for i in range(0, len(residuals[:, j]), range_size):
+            end_index = min(i + range_size, len(residuals[:, j]))
+            if np.sum(flagged_residuals[i:end_index, j]) >= anomaly_threshold:
+                anomalies_range[i:end_index, j] = True
     
-    #voting logic around each hx 
-    anomalies_range_hx1 = anomalies_range[:,:6].copy()
-    anomalies_range_hx2 = anomalies_range[:,4:].copy()
+    # Voting logic around each hx
+    anomalies_range_hx1 = anomalies_range[:, :6].copy()
+    anomalies_range_hx2 = anomalies_range[:, 4:].copy()
 
-    anomalies_hx = np.zeros([len(anomalies_range[:,0]),2], dtype=bool)
+    anomalies_hx = np.zeros([len(anomalies_range[:, 0]), 2], dtype=bool)
     
-    hx1_min_vote = 4
+    hx1_min_vote = 3
     hx2_min_vote = 3
     
-
-    for i in range(1, len(anomalies_range_hx1[:,0])):
-        vote = np.sum(anomalies_range_hx1[i,:])
+    for i in range(0, len(anomalies_range_hx1[:, 0])):
+        vote = np.sum(anomalies_range_hx1[i, :])
         if vote >= hx1_min_vote:
-            anomalies_hx[i,0] = True
+            anomalies_hx[i, 0] = True
 
-    for i in range(1, len(anomalies_range_hx2[:,0])):
-        vote = np.sum(anomalies_range_hx2[i,:])
+    for i in range(0, len(anomalies_range_hx2[:, 0])):
+        vote = np.sum(anomalies_range_hx2[i, :])
         if vote >= hx2_min_vote:
-            anomalies_hx[i,1] = True
+            anomalies_hx[i, 1] = True
     
-    #system level anomalies based on either hx flagging
-    anomalies_system = np.zeros([len(anomalies_range[:,0]),1], dtype=bool)
+    # large deviation in single temp probe
+    anomalies_large_probe = np.zeros_like(anomalies_range, dtype=bool)
     
-    for i in range(len(anomalies_range[:,0])):
-        if anomalies_hx[i,0] or anomalies_hx[i,1]:
+    residuals_percent = np.abs(residuals) / physical_temps
+    percent_threshold = 0.10  # 10% | subject to change
+    
+    for j in range(anomalies_large_probe.shape[1]):
+        for i in range(0, len(anomalies_large_probe[:, j])):
+            if np.abs(residuals_percent[i, j]) > percent_threshold:
+                anomalies_large_probe[i, j] = True
+    
+    # System-level anomalies based on either hx flagging or single temp probe w/ large deviation
+    anomalies_system = np.zeros([len(anomalies_range[:, 0]), 1], dtype=bool)
+    
+    for i in range(len(anomalies_range[:, 0])):
+        if anomalies_hx[i, 0] or anomalies_hx[i, 1] or np.any(anomalies_large_probe[i, :]):
             anomalies_system[i] = True
-    # Write anomalies to an output text file
-    output_file_path = data_folder_file_path+"run "+str(run_number)+"/anomalies.txt"
     
-    # Open the file for writing
-    with open(output_file_path, "w") as file:
-        # Write the data row by row
-        for i in range(len(anomalies_range)):
-            # Convert each column of anomalies_range to a string
-            anomalies_range_row = ",".join(map(str, anomalies_range[i].astype(int)))
-            # Convert each column of anomalies_hx to a string
-            anomalies_hx_row = ",".join(map(str, anomalies_hx[i].astype(int)))
-            # Convert anomalies_system to a string
-            anomalies_system_row = str(int(anomalies_system[i, 0]))
-            # Combine all columns into a single row
-            file.write(f"{anomalies_range_row},{anomalies_hx_row},{anomalies_system_row}\n")
+    # Write anomalies to an output csv\
+
+    combined_anomalies = np.hstack((time,anomalies_range, anomalies_hx, anomalies_system))
+    
+    data_frame=pd.DataFrame.from_records(combined_anomalies)
+    data_frame.to_csv(data_folder_file_path+f"run {run_number}/anomaly.csv",mode="a",header=False,index=False)
+    
     return anomalies_range, anomalies_hx, anomalies_system
-    
-
-# # Plot residuals for each case
-# fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-
-# cases = [
-#     (residuals_case1, anomalies_case1, anomalies_range_case1, "Case 1 (T_hot_in replaced)"),
-#     (residuals_case2, anomalies_case2, anomalies_range_case2, "Case 2 (T_hot_out replaced)"),
-#     (residuals_case3, anomalies_case3, anomalies_range_case3, "Case 3 (T_cold_in replaced)"),
-#     (residuals_case4, anomalies_case4, anomalies_range_case4, "Case 4 (T_cold_out replaced)"),
-# ]
-
-# for ax, (residuals, anomalies, anomalies_range, title) in zip(axs.flat, cases):
-#     ax.plot(residuals, label="Residuals")
-#     ax.scatter(np.where(anomalies)[0], residuals[anomalies], color="red", label="Exceeded threshold")
-#     for i in range(0, len(anomalies_range), range_size):
-#         end_index = min(i + range_size, len(anomalies_range))
-#         if np.any(anomalies_range[i:end_index]):
-#             x = [i, end_index, end_index, i]
-#             y = [min(residuals), min(residuals), max(residuals), max(residuals)]
-#             ax.fill(x, y, color="red", alpha=0.2)
-#     ax.set_title(title)
-#     ax.set_xlabel("Time Step")
-#     ax.set_ylabel("Residual")
-#     ax.legend()
-#     ax.grid(True)
-
-# plt.tight_layout()
-# plt.show()
