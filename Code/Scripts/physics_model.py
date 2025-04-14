@@ -70,7 +70,7 @@ def simulate_data(run_number):
 
     mass_flow_rates             = [None]*num_loops
     for i in range(num_loops):
-        mass_flow_rates[i]      = physical_data[-100:,i] * Gal_min_to_Kg_s 
+        mass_flow_rates[i]      = physical_data[-100:,i+1] * Gal_min_to_Kg_s 
 
     heater_flux                 = physical_data[-100:,4] * heater_conversion
 
