@@ -437,7 +437,7 @@ def simulate_temps(parameters):
     return((simulated_data-true_temp_data).flatten())
 
 
-parameters=[50,0.6,0.00191598766,0.00383197531,0,400]
+parameters=[50,0.6,0.00191598766,0.00383197531,400,400]
 
 print(least_squares(simulate_temps, parameters))
 
