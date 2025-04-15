@@ -1,6 +1,6 @@
 from filtering import filter_data
 from physics_model import simulate_data
-from anomalie_detect import anomaly_detection
+from anomaly_detect import anomaly_detection
 
 import subprocess
 import psutil
