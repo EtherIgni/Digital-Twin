@@ -7,8 +7,8 @@ data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 
 def anomaly_detection(run_number):
     # Load physical and model temperature data from .txt
-    physical_data = pd.read_csv(data_folder_file_path + f"run {run_number}/filtered_data.csv", delimiter=",").tail(10).to_numpy()
-    model_data = pd.read_csv(data_folder_file_path + f"run {run_number}/model_data.csv", delimiter=",").tail(10).to_numpy()
+    physical_data = pd.read_csv(data_folder_file_path + f"run {run_number}/filtered_data.csv", delimiter=",").tail(100).to_numpy()
+    model_data = pd.read_csv(data_folder_file_path + f"run {run_number}/model_data.csv", delimiter=",").tail(100).to_numpy()
     
     time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
     physical_temps = physical_data[:, 4:].copy()  # physical temperatures
@@ -32,8 +32,8 @@ def anomaly_detection(run_number):
     flagged_residuals = np.abs(residuals) > thresholds  # Compare each column with its corresponding threshold
     
     # Check for anomalies over a range
-    range_size = 10  # subject to change
-    anomaly_threshold = 6  # Number of flagged residuals to consider as an anomaly
+    range_size = 25  # subject to change
+    anomaly_threshold = 12  # Number of flagged residuals to consider as an anomaly
     
     # Initialize anomaly detection over ranges for each case
     anomalies_range = np.zeros_like(residuals, dtype=bool)
