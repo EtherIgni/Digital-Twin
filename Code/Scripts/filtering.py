@@ -2,13 +2,13 @@ import numpy as np
 from scipy.ndimage import convolve1d
 import pandas as pd
 
-data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
+data_folder_file_path_unbound = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 
 window_size = 10
 num_passes  = 10
 
 def filter_Data(run_number):
-    data_folder_file_path = data_folder_file_path+"/Run "+str(run_number)+"/"
+    data_folder_file_path = data_folder_file_path_unbound+"/Run "+str(run_number)+"/"
     
     unfiltered_data                     = np.genfromtxt(data_folder_file_path+"raw_data.txt")
     if(unfiltered_data.size>100):

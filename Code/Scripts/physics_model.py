@@ -1,4 +1,4 @@
-data_folder_file_path  = "Code/Data/Run 2"
+data_folder_file_path_unbound  = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 
 
 
@@ -185,7 +185,7 @@ thermo_probe_positions[2]  = np.array([1.4605])
 
 
 def simulate_Data(run_number):
-    data_folder_file_path  = data_folder_file_path+"/Run "+str(run_number)+"/"
+    data_folder_file_path  = data_folder_file_path_unbound+"/Run "+str(run_number)+"/"
     
     
     

@@ -1,6 +1,6 @@
-from filtering import filter_data
-from physics_model import simulate_data
-from anomalie_detect import anomaly_detection
+from filtering import filter_Data
+from physics_model import simulate_Data
+from anomaly_detect import anomaly_detection
 
 import subprocess
 import psutil
@@ -19,8 +19,8 @@ def is_plot_running(script_name=r"C:\Users\DAQ-User\Documents\Repos\Digital-Twin
 
 def master_Control(run_num,Heater, Pump1, Pump2, Wall):
     # Step 1: Run your data pipeline
-    filter_data(run_num)
-    simulate_data(run_num)
+    filter_Data(run_num)
+    simulate_Data(run_num)
     anomaly_detection(run_num)
 
     # Step 2: Launch GUI if not already running
