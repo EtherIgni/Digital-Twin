@@ -10,11 +10,10 @@ def anomaly_detection(run_number):
     physical_data = pd.read_csv(data_folder_file_path + f"run {run_number}/filtered_data.csv", delimiter=",").tail(100).to_numpy()
     model_data = pd.read_csv(data_folder_file_path + f"run {run_number}/model_data.csv", delimiter=",").tail(100).to_numpy()
     
-    time = physical_data[:-1, 0].copy().reshape(-1, 1)  # time data
-    physical_temps = physical_data[:-1, 3:].copy()  # physical temperatures
-    model_temps = model_data[:-1, 3:].copy()  # model temperatures
-    # physical_temps = physical_data[:, 5:].copy()  # physical temperatures
-    # model_temps = model_data[:, 1:].copy()  # model temperatures
+    time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
+    physical_temps = physical_data[:, 4:].copy()  # physical temperatures
+    physical_temps = np.delete(physical_temps, 11, axis=1)  # remove first column
+    model_temps = model_data[:, 1:].copy()  # model temperatures
     
     # Known standard deviation and model error for each probe (example values)
     # temperatures calibrated with +-0.5 C 
@@ -52,8 +51,8 @@ def anomaly_detection(run_number):
 
     anomalies_hx = np.zeros([len(anomalies_range[:, 0]), 2], dtype=bool)
     
-    hx1_min_vote = 3
-    hx2_min_vote = 3
+    hx1_min_vote = 4
+    hx2_min_vote = 2
     
     for i in range(0, len(anomalies_range_hx1[:, 0])):
         vote = np.sum(anomalies_range_hx1[i, :])
