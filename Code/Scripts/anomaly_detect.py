@@ -2,24 +2,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# data folder path
-data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 
-def anomaly_detection(run_number):
+def anomaly_detection(data_folder_file_path):
     # Load physical and model temperature data from .csv
-    physical_data = pd.read_csv(data_folder_file_path + f"Run {run_number}/filtered_data.csv", delimiter=",").tail(100).to_numpy()
-    model_data = pd.read_csv(data_folder_file_path + f"Run {run_number}/simulated_data.csv", delimiter=",").tail(100).to_numpy()
+    physical_data = pd.read_csv(data_folder_file_path + "filtered_data.csv", delimiter=",",index_col=False, header=None).tail(100).to_numpy()
+    model_data = pd.read_csv(data_folder_file_path + "simulated_data.csv", delimiter=",", index_col=False, header=None).tail(100).to_numpy()
     
     time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
-    physical_temps = physical_data[:, 4:].copy()  # physical temperatures
-    physical_temps = np.delete(physical_temps, 11, axis=1)  # remove temperature probe 7, which is an input to the model
+    physical_temps = physical_data[:, 5:].copy()  # physical temperatures
+    physical_temps = np.delete(physical_temps, 6, axis=1)  # remove temperature probe 7, which is an input to the model
     model_temps = model_data[:, 1:].copy()  # model temperatures
     
     # Known standard deviation and model error for each probe (example values)
     # temperatures calibrated with +-0.5 C 
     k = np.sqrt(3) # coverage factor for 95% confidence interval
     calibration_error = 0.5 / k  # 0.5 C calibration error
-    std_dev = np.array([0.0288, 0.0337, 0.0260, 0.0483, 0.0330, 0.0288, 0.0316, 0.0398])  # std from noise analysis
+    std_dev = np.array([0.0288, 0.0337, 0.0260, 0.0483, 0.0330, 0.0288, 0.0398])  # std from noise analysis
     model_error = 0.1  # std of assumed gaussian model error
     
     # Calculate thresholds for each probe
@@ -87,6 +85,6 @@ def anomaly_detection(run_number):
     combined_anomalies = np.hstack((time,anomalies_range, anomalies_hx, anomalies_system))
     
     data_frame=pd.DataFrame.from_records(combined_anomalies)
-    data_frame.to_csv(data_folder_file_path+f"run {run_number}/anomaly.csv",mode="a",header=False,index=False)
+    data_frame.to_csv(data_folder_file_path+"anomaly.csv",mode="a",header=False,index=False)
     
     return anomalies_range, anomalies_hx, anomalies_system

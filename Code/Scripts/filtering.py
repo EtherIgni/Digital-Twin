@@ -2,15 +2,12 @@ import numpy as np
 from scipy.ndimage import convolve1d
 import pandas as pd
 
-data_folder_file_path_unbound = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
-
 window_size = 10
 num_passes  = 10
 
-def filter_Data(run_number):
-    data_folder_file_path = data_folder_file_path_unbound+"/Run "+str(run_number)+"/"
+def filter_Data(data_folder_file_path):
     
-    unfiltered_data                     = np.genfromtxt(data_folder_file_path+"raw_data.txt")
+    unfiltered_data                     = np.genfromtxt(data_folder_file_path+"raw_data.txt",delimiter=",")
     if(unfiltered_data.size>100):
         unfiltered_data=unfiltered_data[-110:]
     else:
@@ -28,4 +25,4 @@ def filter_Data(run_number):
     
     
     data_frame                          = pd.DataFrame.from_records(filtered_data[-100:])
-    data_frame.to_csv(data_folder_file_path+"Run "+str(run_number)+"/filtered_data.csv",mode="a",header=False,index=False)
+    data_frame.to_csv(data_folder_file_path+"filtered_data.csv",mode="a",header=False,index=False)

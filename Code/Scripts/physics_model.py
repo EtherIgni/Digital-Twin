@@ -1,10 +1,3 @@
-data_folder_file_path_unbound  = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
-
-
-
-
-
-
 import numpy as np
 from scipy.interpolate import CubicSpline
 import pandas as pd
@@ -184,8 +177,7 @@ thermo_probe_positions[2]  = np.array([1.4605])
 
 
 
-def simulate_Data(run_number):
-    data_folder_file_path  = data_folder_file_path_unbound+"/Run "+str(run_number)+"/"
+def simulate_Data(data_folder_file_path):
     
     
     
