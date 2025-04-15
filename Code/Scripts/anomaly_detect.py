@@ -11,16 +11,20 @@ def anomaly_detection(run_number):
     model_data = pd.read_csv(data_folder_file_path + f"run {run_number}/model_data.csv", delimiter=",").tail(100).to_numpy()
     
     time = physical_data[:-1, 0].copy().reshape(-1, 1)  # time data
-    physical_temps = physical_data[:-1, 5:].copy()  # physical temperatures
-    model_temps = model_data[:-1, 1:].copy()  # model temperatures
+    physical_temps = physical_data[:-1, 3:].copy()  # physical temperatures
+    model_temps = model_data[:-1, 3:].copy()  # model temperatures
+    # physical_temps = physical_data[:, 5:].copy()  # physical temperatures
+    # model_temps = model_data[:, 1:].copy()  # model temperatures
     
     # Known standard deviation and model error for each probe (example values)
     # temperatures calibrated with +-0.5 C 
+    k = np.sqrt(3) # coverage factor for 99% confidence interval
+    calibration_error = 0.5 / k  # 0.5 C calibration error
     std_dev = np.array([0.0288, 0.0337, 0.0260, 0.0483, 0.0330, 0.0288, 0.0316, 0.0398])  # std from noise analysis
-    model_error = np.array([0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01])  # tbd
+    model_error = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])  # tbd
     
     # Calculate thresholds for each probe
-    thresholds = std_dev + model_error  # Element-wise addition
+    thresholds = np.sqrt(calibration_error**2 + std_dev**2 + model_error**2)  # add in quadricature
     
     # Calculate residuals
     residuals = model_temps - physical_temps
@@ -65,7 +69,7 @@ def anomaly_detection(run_number):
     anomalies_large_probe = np.zeros_like(anomalies_range, dtype=bool)
     
     residuals_percent = np.abs(residuals) / physical_temps
-    percent_threshold = 0.10  # 10% | subject to change
+    percent_threshold = 0.075  # 7.5% | subject to change
     
     for j in range(anomalies_large_probe.shape[1]):
         for i in range(0, len(anomalies_large_probe[:, j])):
