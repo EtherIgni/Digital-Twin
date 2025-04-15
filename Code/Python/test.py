@@ -1,39 +1,12 @@
 from scipy.optimize import least_squares
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-a=np.array([[1,2,-2],
-            [1,1,1],
-            [2,2,1]])
+data_folder_file_path       = "Code/Data/Run 2/"
+physical_data               = pd.read_csv(data_folder_file_path+"simulated_data.csv", index_col=False, header=None)
+physical_data               = np.array(physical_data)[-200:]
 
-b=np.tril(a,-1)
-c=np.triu(a,1)
-d=np.diag(np.diag(a))
-
-e=np.linalg.inv(d)@(b+c)
-
-f=np.linalg.eig(e).eigenvalues
-
-g=np.max(np.abs(f))
-
-print(g)
-
-
-
-
-a=np.array([[3,1,1],
-            [-1,3,1],
-            [-1,-1,3]])
-
-b=np.tril(a,-1)
-c=np.triu(a,1)
-d=np.diag(np.diag(a))
-
-e=np.linalg.inv(d)@(b+c)
-
-e=np.linalg.inv(d-c)@(b)
-
-f=np.linalg.eig(e).eigenvalues
-
-g=np.max(np.abs(f))
-
-print(g)
+for i in range(1,physical_data.shape[1]):
+    plt.plot(physical_data[:,i])
+plt.show()
