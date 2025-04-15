@@ -12,7 +12,7 @@ def anomaly_detection(run_number):
     
     time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
     physical_temps = physical_data[:, 4:].copy()  # physical temperatures
-    physical_temps = np.delete(physical_temps, 11, axis=1)  # remove temperature probe 7, which is an input to the model
+    physical_temps = np.delete(physical_temps, 6, axis=1)  # remove temperature probe 7, which is an input to the model
     model_temps = model_data[:, 1:].copy()  # model temperatures
     
     # Known standard deviation and model error for each probe (example values)
