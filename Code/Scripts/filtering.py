@@ -7,8 +7,10 @@ data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 window_size = 10
 num_passes  = 10
 
-def filter_data(run_number):
-    unfiltered_data                     = np.genfromtxt(data_folder_file_path+"Run "+str(run_number)+"/raw_data.txt")
+def filter_Data(run_number):
+    data_folder_file_path = data_folder_file_path+"/Run "+str(run_number)+"/"
+    
+    unfiltered_data                     = np.genfromtxt(data_folder_file_path+"raw_data.txt")
     if(unfiltered_data.size>100):
         unfiltered_data=unfiltered_data[-110:]
     else:

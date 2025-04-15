@@ -67,7 +67,7 @@ num_exchangers              = 2
 pump_controller_conversions = [2.8, 3.6, 0.75]
 
 physical_data               = pd.read_csv(filtered_data_file_path,index_col=False,header=None)
-physical_data               = np.array(physical_data)[:14000]
+physical_data               = np.array(physical_data)
 
 time_grid_real              = physical_data[:,0]
 num_time_intervals          = len(time_grid_real)
@@ -116,7 +116,10 @@ for i in range(7):
 
 
 
-
+disable_gid=True
+disable_plot=False
+error_or_data=False
+disable_hist=True
 def simulate_temps(parameters):
     
     heater_conversion          = parameters[0]
@@ -438,129 +441,135 @@ def simulate_temps(parameters):
     simulated_data[:,6]=simulated_probe_temps[2][:,0]
 
 
-    fig, ax = plt.subplots(3)
-    fig.set_figheight(20)
-    fig.set_figwidth(7)
+    if(not(disable_gid)):
+        fig, ax = plt.subplots(3)
+        fig.set_figheight(20)
+        fig.set_figwidth(7)
 
-    # def gif_Function(frame):
-    #     frame=int(frame*50)
-        
-    #     ax[0].cla()
-    #     ax[0].plot(flow_curves[0], temp_curve[0][frame], color="black")
-    #     y_bounds=[np.min(temp_curve[0]),np.max(temp_curve[0])]
-        
-    #     ax[0].vlines(np.sum(segment_lengths[0][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[0].vlines(np.sum(segment_lengths[0][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[0].vlines(np.sum(segment_lengths[0][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[0].vlines(np.sum(segment_lengths[0][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[0].vlines(np.sum(segment_lengths[0][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[0].vlines(np.sum(segment_lengths[0][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[0].vlines(np.sum(segment_lengths[0][:8]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[0].vlines(np.sum(segment_lengths[0][:9]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[0].vlines(thermo_probe_positions[0][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    #     ax[0].vlines(thermo_probe_positions[0][1], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    #     ax[0].vlines(thermo_probe_positions[0][2], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    #     ax[0].vlines(thermo_probe_positions[0][3], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-        
-    #     ax[0].fill_between([np.sum(segment_lengths[0][:0]),np.sum(segment_lengths[0][:1])], y_bounds[0], y_bounds[1], color='yellow', alpha=0.3)
-    #     ax[0].fill_between([np.sum(segment_lengths[0][:2]),np.sum(segment_lengths[0][:3])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
-    #     ax[0].fill_between([np.sum(segment_lengths[0][:4]),np.sum(segment_lengths[0][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-    #     ax[0].fill_between([np.sum(segment_lengths[0][:5]),np.sum(segment_lengths[0][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-    #     ax[0].fill_between([np.sum(segment_lengths[0][:6]),np.sum(segment_lengths[0][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-    #     ax[0].fill_between([np.sum(segment_lengths[0][:8]),np.sum(segment_lengths[0][:9])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
-        
-    #     ax[0].set_ylim(y_bounds[0],y_bounds[1])
-    #     ax[0].set_xlim(np.min(flow_curves[0]),np.max(flow_curves[0]))
-        
-        
-    #     ax[1].cla()
-    #     ax[1].plot(flow_curves[1], temp_curve[1][frame], color="black")
-    #     y_bounds=[np.min(temp_curve[1]),np.max(temp_curve[1])]
-        
-    #     ax[1].vlines(np.sum(segment_lengths[1][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[1].vlines(np.sum(segment_lengths[1][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[1].vlines(np.sum(segment_lengths[1][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[1].vlines(np.sum(segment_lengths[1][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[1].vlines(np.sum(segment_lengths[1][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[1].vlines(np.sum(segment_lengths[1][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[1].fill_between([np.sum(segment_lengths[1][:0]),np.sum(segment_lengths[1][:1])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-    #     ax[1].fill_between([np.sum(segment_lengths[1][:2]),np.sum(segment_lengths[1][:3])], y_bounds[0], y_bounds[1], color='cyan', alpha=0.3)
-    #     ax[1].fill_between([np.sum(segment_lengths[1][:4]),np.sum(segment_lengths[1][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-    #     ax[1].fill_between([np.sum(segment_lengths[1][:5]),np.sum(segment_lengths[1][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-    #     ax[1].fill_between([np.sum(segment_lengths[1][:6]),np.sum(segment_lengths[1][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-        
-    #     ax[1].set_ylim(y_bounds[0],y_bounds[1])
-    #     ax[1].set_xlim(np.min(flow_curves[1]),np.max(flow_curves[1]))
-        
-        
-    #     ax[2].cla()
-    #     ax[2].plot(flow_curves[2], temp_curve[2][frame], color="black")
-    #     y_bounds=[np.min(temp_curve[2]),np.max(temp_curve[2])]
-        
-    #     ax[2].vlines(np.sum(segment_lengths[2][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    #     ax[2].vlines(np.sum(segment_lengths[2][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-        
-    #     ax[2].fill_between([np.sum(segment_lengths[2][:1]),np.sum(segment_lengths[2][:2])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-        
-    #     ax[2].set_ylim(y_bounds[0],y_bounds[1])
-    #     ax[2].set_xlim(np.min(flow_curves[2]),np.max(flow_curves[2]))
+        def gif_Function(frame):
+            frame=int(frame*50)
+            
+            ax[0].cla()
+            ax[0].plot(flow_curves[0], temp_curve[0][frame], color="black")
+            y_bounds=[np.min(temp_curve[0]),np.max(temp_curve[0])]
+            
+            ax[0].vlines(np.sum(segment_lengths[0][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[0].vlines(np.sum(segment_lengths[0][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[0].vlines(np.sum(segment_lengths[0][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[0].vlines(np.sum(segment_lengths[0][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[0].vlines(np.sum(segment_lengths[0][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[0].vlines(np.sum(segment_lengths[0][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[0].vlines(np.sum(segment_lengths[0][:8]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[0].vlines(np.sum(segment_lengths[0][:9]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[0].vlines(thermo_probe_positions[0][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+            ax[0].vlines(thermo_probe_positions[0][1], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+            ax[0].vlines(thermo_probe_positions[0][2], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+            ax[0].vlines(thermo_probe_positions[0][3], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+            
+            ax[0].fill_between([np.sum(segment_lengths[0][:0]),np.sum(segment_lengths[0][:1])], y_bounds[0], y_bounds[1], color='yellow', alpha=0.3)
+            ax[0].fill_between([np.sum(segment_lengths[0][:2]),np.sum(segment_lengths[0][:3])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
+            ax[0].fill_between([np.sum(segment_lengths[0][:4]),np.sum(segment_lengths[0][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+            ax[0].fill_between([np.sum(segment_lengths[0][:5]),np.sum(segment_lengths[0][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+            ax[0].fill_between([np.sum(segment_lengths[0][:6]),np.sum(segment_lengths[0][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+            ax[0].fill_between([np.sum(segment_lengths[0][:8]),np.sum(segment_lengths[0][:9])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
+            
+            ax[0].set_ylim(y_bounds[0],y_bounds[1])
+            ax[0].set_xlim(np.min(flow_curves[0]),np.max(flow_curves[0]))
+            
+            
+            ax[1].cla()
+            ax[1].plot(flow_curves[1], temp_curve[1][frame], color="black")
+            y_bounds=[np.min(temp_curve[1]),np.max(temp_curve[1])]
+            
+            ax[1].vlines(np.sum(segment_lengths[1][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[1].vlines(np.sum(segment_lengths[1][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[1].vlines(np.sum(segment_lengths[1][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[1].vlines(np.sum(segment_lengths[1][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[1].vlines(np.sum(segment_lengths[1][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[1].vlines(np.sum(segment_lengths[1][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[1].fill_between([np.sum(segment_lengths[1][:0]),np.sum(segment_lengths[1][:1])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+            ax[1].fill_between([np.sum(segment_lengths[1][:2]),np.sum(segment_lengths[1][:3])], y_bounds[0], y_bounds[1], color='cyan', alpha=0.3)
+            ax[1].fill_between([np.sum(segment_lengths[1][:4]),np.sum(segment_lengths[1][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+            ax[1].fill_between([np.sum(segment_lengths[1][:5]),np.sum(segment_lengths[1][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+            ax[1].fill_between([np.sum(segment_lengths[1][:6]),np.sum(segment_lengths[1][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+            
+            ax[1].set_ylim(y_bounds[0],y_bounds[1])
+            ax[1].set_xlim(np.min(flow_curves[1]),np.max(flow_curves[1]))
+            
+            
+            ax[2].cla()
+            ax[2].plot(flow_curves[2], temp_curve[2][frame], color="black")
+            y_bounds=[np.min(temp_curve[2]),np.max(temp_curve[2])]
+            
+            ax[2].vlines(np.sum(segment_lengths[2][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            ax[2].vlines(np.sum(segment_lengths[2][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+            
+            ax[2].fill_between([np.sum(segment_lengths[2][:1]),np.sum(segment_lengths[2][:2])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+            
+            ax[2].set_ylim(y_bounds[0],y_bounds[1])
+            ax[2].set_xlim(np.min(flow_curves[2]),np.max(flow_curves[2]))
 
-    # gif    = FuncAnimation(fig, gif_Function, frames=int((num_time_intervals)/50), interval=25)
-    # writer = PillowWriter(fps=50,
-    #                     metadata=dict(artist='Me'),
-    #                     bitrate=1800)
-    # # gif.save('Code/Images/Loop_Model.gif', writer=writer)
-    # plt.show()
+        gif    = FuncAnimation(fig, gif_Function, frames=int((num_time_intervals)/50), interval=25)
+        writer = PillowWriter(fps=50,
+                            metadata=dict(artist='Me'),
+                            bitrate=1800)
+        # gif.save('Code/Images/Loop_Model.gif', writer=writer)
+        plt.show()
     
-    # return(simulated_data[250:])
-    return(((simulated_data[250:]-true_temp_data[250:])/true_temp_data[250:]).flatten())
+    if(error_or_data):
+        return(((simulated_data-true_temp_data)).flatten())
+    else:
+        return(simulated_data)
     
 
 
-parameters=[18.374,0.726,0.001511,0.007803,300,564]
+parameters=[75.83,0.6,0.00222,0.00302,733,508]
 
-# simulated_data=simulate_temps(parameters)
+simulated_data=simulate_temps(parameters)
 
-results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
-np.savetxt("calibration Results.txt",results.x)
+# results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
+# np.savetxt("calibration Results.txt",results.x)
 
-
-
-
-
-# fix, ax   = plt.subplots(num_loops)
-
-# ax[0].plot(time_grid[250:], simulated_data[:,0], linestyle="dashed", label="Simulated Temp 1", color="green")
-# ax[0].plot(time_grid[250:], simulated_data[:,1], linestyle="dashed", label="Simulated Temp 2", color="blue")
-# ax[0].plot(time_grid[250:], simulated_data[:,2], linestyle="dashed", label="Simulated Temp 3", color="orange")
-# ax[0].plot(time_grid[250:], simulated_data[:,3], linestyle="dashed", label="Simulated Temp 4", color="red")
-
-# ax[1].plot(time_grid[250:], simulated_data[:,4], linestyle="dashed", label="Simulated Temp 1", color="green")
-# ax[1].plot(time_grid[250:], simulated_data[:,5], linestyle="dashed", label="Simulated Temp 2", color="red")
-
-# ax[2].plot(time_grid[250:], simulated_data[:,6], linestyle="dashed", label="Simulated Temp 2", color="red")
+if(not(disable_hist)):
+    plt.hist(simulated_data,bins=50)
+    plt.show()
+    print(np.std(simulated_data))
 
 
-# ax[0].plot(time_grid_real, temperature_data[:,0], label="True Temp  1", color="green")
-# ax[0].plot(time_grid_real, temperature_data[:,1], label="True Temp  2", color="blue")
-# ax[0].plot(time_grid_real, temperature_data[:,2], label="True Temp  3", color="orange")
-# ax[0].plot(time_grid_real, temperature_data[:,3], label="True Temp  4", color="red")
+if(not(disable_plot)):
+    fix, ax   = plt.subplots(num_loops)
 
-# ax[1].plot(time_grid_real, temperature_data[:,4], label="True Temp  1", color="green")
-# ax[1].plot(time_grid_real, temperature_data[:,5], label="True Temp  2", color="red")
+    ax[0].plot(time_grid, simulated_data[:,0], linestyle="dashed", label="Simulated Temp 1", color="green")
+    ax[0].plot(time_grid, simulated_data[:,1], linestyle="dashed", label="Simulated Temp 2", color="blue")
+    ax[0].plot(time_grid, simulated_data[:,2], linestyle="dashed", label="Simulated Temp 3", color="orange")
+    ax[0].plot(time_grid, simulated_data[:,3], linestyle="dashed", label="Simulated Temp 4", color="red")
 
-# ax[2].plot(time_grid_real, temperature_data[:,6], label="True Temp  1", color="green")
-# ax[2].plot(time_grid_real, temperature_data[:,7], label="True Temp  2", color="red")
+    ax[1].plot(time_grid, simulated_data[:,4], linestyle="dashed", label="Simulated Temp 1", color="green")
+    ax[1].plot(time_grid, simulated_data[:,5], linestyle="dashed", label="Simulated Temp 2", color="red")
 
-# ax[0].legend()
-# ax[1].legend()
-# ax[2].legend()
+    ax[2].plot(time_grid, simulated_data[:,6], linestyle="dashed", label="Simulated Temp 2", color="red")
 
-# plt.show()
+
+    ax[0].plot(time_grid_real, temperature_data[:,0], label="True Temp  1", color="green")
+    ax[0].plot(time_grid_real, temperature_data[:,1], label="True Temp  2", color="blue")
+    ax[0].plot(time_grid_real, temperature_data[:,2], label="True Temp  3", color="orange")
+    ax[0].plot(time_grid_real, temperature_data[:,3], label="True Temp  4", color="red")
+
+    ax[1].plot(time_grid_real, temperature_data[:,4], label="True Temp  1", color="green")
+    ax[1].plot(time_grid_real, temperature_data[:,5], label="True Temp  2", color="red")
+
+    ax[2].plot(time_grid_real, temperature_data[:,6], label="True Temp  1", color="green")
+    ax[2].plot(time_grid_real, temperature_data[:,7], label="True Temp  2", color="red")
+
+    ax[0].legend()
+    ax[1].legend()
+    ax[2].legend()
+
+    plt.show()
