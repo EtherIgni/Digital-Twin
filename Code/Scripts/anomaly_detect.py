@@ -6,9 +6,9 @@ import pandas as pd
 data_folder_file_path = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/"
 
 def anomaly_detection(run_number):
-    # Load physical and model temperature data from .txt
-    physical_data = pd.read_csv(data_folder_file_path + f"run {run_number}/filtered_data.csv", delimiter=",").tail(100).to_numpy()
-    model_data = pd.read_csv(data_folder_file_path + f"run {run_number}/model_data.csv", delimiter=",").tail(100).to_numpy()
+    # Load physical and model temperature data from .csv
+    physical_data = pd.read_csv(data_folder_file_path + f"Run {run_number}/filtered_data.csv", delimiter=",").tail(100).to_numpy()
+    model_data = pd.read_csv(data_folder_file_path + f"Run {run_number}/simulated_data.csv", delimiter=",").tail(100).to_numpy()
     
     time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
     physical_temps = physical_data[:, 4:].copy()  # physical temperatures
