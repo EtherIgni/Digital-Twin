@@ -9,7 +9,7 @@ import time
 from scipy.ndimage import convolve1d
 
 
-
+print("Starting Script")
 
 
 
