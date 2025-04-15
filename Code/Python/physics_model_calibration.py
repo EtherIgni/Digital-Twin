@@ -9,7 +9,6 @@ import time
 from scipy.ndimage import convolve1d
 
 
-print("Starting Script")
 
 
 
@@ -68,10 +67,10 @@ num_exchangers              = 2
 pump_controller_conversions = [2.8, 3.6, 0.75]
 
 physical_data               = pd.read_csv(filtered_data_file_path,index_col=False,header=None)
-physical_data               = np.array(physical_data)
+physical_data               = np.array(physical_data)[:14000]
 
 time_grid_real              = physical_data[:,0]
-num_time_intervals          = len(time_grid_real)*10
+num_time_intervals          = len(time_grid_real)
 time_grid, time_spacing     = np.linspace(np.min(time_grid_real),np.max(time_grid_real),num_time_intervals,retstep=True)
 
 mass_flow_rates             = [None]*num_loops
@@ -108,6 +107,10 @@ for i in range(7):
 # plt.xlabel("Time (s)")
 # plt.ylabel("Input Voltage (V)")
 
+# plt.show()
+
+# plt.plot(time_grid_real)
+# plt.plot(time_grid_real)
 # plt.show()
 
 
@@ -434,12 +437,16 @@ def simulate_temps(parameters):
     simulated_data[:,5]=simulated_probe_temps[1][:,1]
     simulated_data[:,6]=simulated_probe_temps[2][:,0]
 
-    return((simulated_data-true_temp_data).flatten())
+    # return(simulated_data[250:])
+    return(((simulated_data[250:]-true_temp_data[250:])/true_temp_data[250:]).flatten())
+    
 
 
 parameters=[50,0.6,0.00191598766,0.00383197531,400,400]
 
-results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[1000,1,0.1,0.1,5000,5000]])
+# simulated_data=simulate_temps(parameters)
+
+results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
 np.savetxt("calibration Results.txt",results.x)
 
 
@@ -448,15 +455,15 @@ np.savetxt("calibration Results.txt",results.x)
 
 # fix, ax   = plt.subplots(num_loops)
 
-# ax[0].plot(time_grid, simulated_data[:,1], linestyle="dashed", label="Simulated Temp 1", color="green")
-# ax[0].plot(time_grid, simulated_data[:,2], linestyle="dashed", label="Simulated Temp 2", color="blue")
-# ax[0].plot(time_grid, simulated_data[:,3], linestyle="dashed", label="Simulated Temp 3", color="orange")
-# ax[0].plot(time_grid, simulated_data[:,4], linestyle="dashed", label="Simulated Temp 4", color="red")
+# ax[0].plot(time_grid[250:], simulated_data[:,0], linestyle="dashed", label="Simulated Temp 1", color="green")
+# ax[0].plot(time_grid[250:], simulated_data[:,1], linestyle="dashed", label="Simulated Temp 2", color="blue")
+# ax[0].plot(time_grid[250:], simulated_data[:,2], linestyle="dashed", label="Simulated Temp 3", color="orange")
+# ax[0].plot(time_grid[250:], simulated_data[:,3], linestyle="dashed", label="Simulated Temp 4", color="red")
 
-# ax[1].plot(time_grid, simulated_data[:,5], linestyle="dashed", label="Simulated Temp 1", color="green")
-# ax[1].plot(time_grid, simulated_data[:,6], linestyle="dashed", label="Simulated Temp 2", color="red")
+# ax[1].plot(time_grid[250:], simulated_data[:,4], linestyle="dashed", label="Simulated Temp 1", color="green")
+# ax[1].plot(time_grid[250:], simulated_data[:,5], linestyle="dashed", label="Simulated Temp 2", color="red")
 
-# ax[2].plot(time_grid, simulated_data[:,8], linestyle="dashed", label="Simulated Temp 2", color="red")
+# ax[2].plot(time_grid[250:], simulated_data[:,6], linestyle="dashed", label="Simulated Temp 2", color="red")
 
 
 # ax[0].plot(time_grid_real, temperature_data[:,0], label="True Temp  1", color="green")
