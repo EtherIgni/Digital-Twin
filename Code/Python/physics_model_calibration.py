@@ -440,8 +440,8 @@ def simulate_temps(parameters):
 parameters=[50,0.6,0.00191598766,0.00383197531,400,400]
 
 results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[1000,1,0.1,0.1,5000,5000]])
-print(results)
-print(results.x)
+np.savetxt("calibration Results.txt",results.x)
+
 
 
 
