@@ -12,15 +12,15 @@ def anomaly_detection(run_number):
     
     time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
     physical_temps = physical_data[:, 4:].copy()  # physical temperatures
-    physical_temps = np.delete(physical_temps, 11, axis=1)  # remove first column
+    physical_temps = np.delete(physical_temps, 11, axis=1)  # remove temperature probe 7, which is an input to the model
     model_temps = model_data[:, 1:].copy()  # model temperatures
     
     # Known standard deviation and model error for each probe (example values)
     # temperatures calibrated with +-0.5 C 
-    k = np.sqrt(3) # coverage factor for 99% confidence interval
+    k = np.sqrt(3) # coverage factor for 95% confidence interval
     calibration_error = 0.5 / k  # 0.5 C calibration error
     std_dev = np.array([0.0288, 0.0337, 0.0260, 0.0483, 0.0330, 0.0288, 0.0316, 0.0398])  # std from noise analysis
-    model_error = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])  # tbd
+    model_error = 0.1  # std of assumed gaussian model error
     
     # Calculate thresholds for each probe
     thresholds = np.sqrt(calibration_error**2 + std_dev**2 + model_error**2)  # add in quadricature
