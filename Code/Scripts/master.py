@@ -2,6 +2,7 @@ from filtering import filter_Data
 from physics_model import simulate_Data
 from anomaly_detect import anomaly_detection
 import os
+from GUI_plotting import launch_gui
 
 import subprocess
 import psutil
@@ -28,8 +29,8 @@ def master_Control(run_number,Heater, Pump1, Pump2, Wall):
         anomaly_detection(data_file_path)
 
         # Step 2: Launch GUI if not already running
-        #if not is_plot_running():
-        #    subprocess.Popen(["python", r"C:\Users\DAQ-User\Documents\Repos\Digital-Twin\Code\Scripts\GUI_plotting.py"], shell=True)
+        if not is_plot_running():
+            subprocess.Popen(["python", r"C:\Users\DAQ-User\Documents\Repos\Digital-Twin\Code\Scripts\GUI_plotting.py"], shell=True)
     else:
         filter_Data(data_file_path)
 
