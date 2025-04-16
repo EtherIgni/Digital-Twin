@@ -4,7 +4,7 @@ import pandas as pd
 
 def filter_Data(data_folder_file_path):
     
-    unfiltered_data_real                     = np.genfromtxt("/run/media/aaron/537F-791C/true/raw_data.txt",delimiter=",")
+    unfiltered_data                     = np.genfromtxt(data_folder_file_path+"raw_data.txt",delimiter=",")
         
     filtered_data                       = np.zeros(unfiltered_data.shape)
 
