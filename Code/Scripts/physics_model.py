@@ -186,16 +186,17 @@ def simulate_Data(data_folder_file_path):
     
     
     physical_data               = pd.read_csv(data_folder_file_path+"filtered_data.csv", index_col=False, header=None)
-    physical_data               = np.array(physical_data)[-101:]
+    physical_data               = np.array(physical_data_raw)[-101:]
 
     num_time_intervals          = 100
-    time_grid                   = physical_data[:,0]
+    time_grid                   = physical_data[:,0]/1000
 
     temperature_data            = physical_data[:,5:]
 
     mass_flow_rates             = [None]*num_loops
     for i in range(num_loops):
         mass_flow_rates[i]      = physical_data[:,i+1] * Gal_min_to_Kg_s
+        
 
     heater_flux                 = physical_data[:,4] * heater_conversion
 
@@ -230,6 +231,7 @@ def simulate_Data(data_folder_file_path):
         initial_temps[1]           = np.array([physical_data[0,9],  physical_data[0,10]])
         initial_temps[2]           = np.array([physical_data[0,11], physical_data[0,12]])
         
+        print(initial_temps)
         for i in range(num_loops-1):
             temp_curve[i]    = np.interp(flow_curves[i],
                                         thermo_probe_positions[i],
@@ -238,8 +240,6 @@ def simulate_Data(data_folder_file_path):
         temp_curve[2]    = np.interp(flow_curves[2],
                                     np.concat([[0],thermo_probe_positions[2]]),
                                     initial_temps[2])
-
-    print(temp_curve)
 
 
 
@@ -329,10 +329,10 @@ def simulate_Data(data_folder_file_path):
 
 
         simulated_data[step,0] = time_grid[step+1]
-        simulated_data[step,1] = np.interp(thermo_probe_positions[0][1], flow_curves[0], temp_curve[0])
-        simulated_data[step,2] = np.interp(thermo_probe_positions[0][2], flow_curves[0], temp_curve[0])
-        simulated_data[step,3] = np.interp(thermo_probe_positions[0][3], flow_curves[0], temp_curve[0])
-        simulated_data[step,4] = np.interp(thermo_probe_positions[0][0], flow_curves[0], temp_curve[0])
+        simulated_data[step,2] = np.interp(thermo_probe_positions[0][0], flow_curves[0], temp_curve[0])
+        simulated_data[step,3] = np.interp(thermo_probe_positions[0][1], flow_curves[0], temp_curve[0])
+        simulated_data[step,4] = np.interp(thermo_probe_positions[0][2], flow_curves[0], temp_curve[0])
+        simulated_data[step,1] = np.interp(thermo_probe_positions[0][3], flow_curves[0], temp_curve[0])
         simulated_data[step,5] = np.interp(thermo_probe_positions[1][0], flow_curves[1], temp_curve[1])
         simulated_data[step,6] = np.interp(thermo_probe_positions[1][1], flow_curves[1], temp_curve[1])
         simulated_data[step,7] = np.interp(thermo_probe_positions[2][0], flow_curves[2], temp_curve[2])
@@ -347,5 +347,3 @@ def simulate_Data(data_folder_file_path):
 
     data_frame = pd.DataFrame.from_records(temp_curve)
     data_frame.to_csv(data_folder_file_path+"model_save.csv")
-
-    print(temp_curve)
