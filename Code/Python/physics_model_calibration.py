@@ -54,7 +54,7 @@ Gal_min_to_Kg_s           = 0.0466 #(Kg/s)/(Gal/min)
 
 
 
-filtered_data_file_path  = "Code/Data/Run 2/filtered_data.csv"
+filtered_data_file_path  = "Code/Data/Run 4/filtered_data.csv"
 
 
 
@@ -117,8 +117,8 @@ for i in range(7):
 
 
 disable_gid=True
-disable_plot=False
-error_or_data=False
+disable_plot=True
+error_or_data=True
 disable_hist=True
 def simulate_temps(parameters):
     
@@ -532,10 +532,10 @@ def simulate_temps(parameters):
 
 parameters=[75.83,0.6,0.00222,0.00302,733,508]
 
-simulated_data=simulate_temps(parameters)
+# simulated_data=simulate_temps(parameters)
 
-# results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
-# np.savetxt("calibration Results.txt",results.x)
+results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
+np.savetxt("calibration Results.txt",results.x)
 
 if(not(disable_hist)):
     plt.hist(simulated_data,bins=50)
