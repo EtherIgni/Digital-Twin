@@ -98,27 +98,27 @@ for i in range(7):
     true_temp_data[:,i]     = np.interp(time_grid,time_grid_real,temperature_data[:,j])
 
 
-plt.plot(time_grid, mass_flow_rates[0], label="Pump input 1", color="green")
-plt.plot(time_grid, mass_flow_rates[1], label="Pump input 2", color="blue")
-plt.plot(time_grid, mass_flow_rates[2], label="Pump input 3", color="red")
-plt.plot(time_grid, heater_flux_true[:], label="Heater input", color="orange")
+# plt.plot(time_grid, mass_flow_rates[0], label="Pump input 1", color="green")
+# plt.plot(time_grid, mass_flow_rates[1], label="Pump input 2", color="blue")
+# plt.plot(time_grid, mass_flow_rates[2], label="Pump input 3", color="red")
+# plt.plot(time_grid, heater_flux_true[:], label="Heater input", color="orange")
 
-plt.legend()
-plt.xlabel("Time (s)")
-plt.ylabel("Input Voltage (V)")
+# plt.legend()
+# plt.xlabel("Time (s)")
+# plt.ylabel("Input Voltage (V)")
 
-plt.show()
+# plt.show()
 
-plt.plot(time_grid_real)
-plt.plot(time_grid_real)
-plt.show()
+# plt.plot(time_grid_real)
+# plt.plot(time_grid_real)
+# plt.show()
 
 
 
 
 disable_gid=True
-disable_plot=False
-error_or_data=False
+disable_plot=True
+error_or_data=True
 disable_hist=True
 def simulate_temps(parameters):
     
@@ -532,10 +532,10 @@ def simulate_temps(parameters):
 
 parameters=[53.6,0.6233,0.00214,0.01,581,468]
 
-simulated_data=simulate_temps(parameters)
+# simulated_data=simulate_temps(parameters)
 
-# results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
-# np.savetxt("calibration Results.txt",results.x)
+results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
+np.savetxt("calibration Results.txt",results.x)
 
 if(not(disable_hist)):
     plt.hist(simulated_data,bins=50)
