@@ -129,13 +129,13 @@ def simulate_temps(parameters):
                                            [2.5146,0.2413]])
     heat_exchanger_main_length = 0.5207
     heat_exchanger_cap_length  = 0.0889
-    heat_exchanger_area_ratio  = parameters[1]
-    heat_exchanger_area_total  = parameters[2]
+    heat_exchanger_area_ratio  = 0.6
+    heat_exchanger_area_total  = parameters[1]
     heat_exchanger_areas       = np.array([heat_exchanger_area_total*heat_exchanger_area_ratio,
                                         heat_exchanger_area_total*(1-heat_exchanger_area_ratio)])
-    heat_exchanger_cap_area    = parameters[3]
+    heat_exchanger_cap_area    = parameters[2]
     num_nodes_in_exchanger     = np.array([50,50])
-    heat_exchange_coefficients = np.array([parameters[4],parameters[5]])
+    heat_exchange_coefficients = np.array([parameters[3],parameters[4]])
 
     heater_length              = 1.143
     heater_area                = 0.004188254 
@@ -432,13 +432,13 @@ def simulate_temps(parameters):
 
 
     simulated_data=np.zeros((time_grid.size,7))
-    simulated_data[:,0]=simulated_probe_temps[0][:,3]
-    simulated_data[:,1]=simulated_probe_temps[0][:,0]
-    simulated_data[:,2]=simulated_probe_temps[0][:,1]
-    simulated_data[:,3]=simulated_probe_temps[0][:,2]
-    simulated_data[:,4]=simulated_probe_temps[1][:,0]
-    simulated_data[:,5]=simulated_probe_temps[1][:,1]
-    simulated_data[:,6]=simulated_probe_temps[2][:,0]
+    simulated_data[:,0]=simulated_probe_temps[0][:,3]+parameters[5]
+    simulated_data[:,1]=simulated_probe_temps[0][:,0]+parameters[6]
+    simulated_data[:,2]=simulated_probe_temps[0][:,1]+parameters[7]
+    simulated_data[:,3]=simulated_probe_temps[0][:,2]+parameters[8]
+    simulated_data[:,4]=simulated_probe_temps[1][:,0]+parameters[9]
+    simulated_data[:,5]=simulated_probe_temps[1][:,1]+parameters[10]
+    simulated_data[:,6]=simulated_probe_temps[2][:,0]+parameters[11]
 
 
     if(not(disable_gid)):
@@ -530,11 +530,11 @@ def simulate_temps(parameters):
     
 
 
-parameters=[53.6,0.6233,0.00214,0.01,581,468]
+parameters=[154.06,0.00671,0.00116,520,442,0,0,0,0,0,0,0]
 
 # simulated_data=simulate_temps(parameters)
 
-results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
+results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,-5,-5,-5,-5,-5,-5,-5],[400,0.01,0.01,1000,1000,5,5,5,5,5,5,5]])
 np.savetxt("calibration Results.txt",results.x)
 
 if(not(disable_hist)):
