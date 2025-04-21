@@ -100,7 +100,7 @@ for i in range(7):
 
 
 
-calibrate_or_plot=False
+calibrate_or_plot=True
 show_geometry=False
 show_gif=False
 show_hist=True
@@ -521,7 +521,7 @@ def simulate_temps(parameters):
 parameters=[130.98053,0.00429,0.00006,239.07240,0.00003,0.07249,0,0,0,0,0,0,0]
 
 if(calibrate_or_plot):
-    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,-5,-5,-5,-5,-5,-5,-5],[400,0.1,0.1,1000,1000,1000,5,5,5,5,5,5,5]])
+    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,-1000,-1000,-1000,-5,-5,-5,-5,-5,-5,-5],[400,0.1,0.1,1000,1000,1000,5,5,5,5,5,5,5]])
     np.savetxt("calibration Results.txt",results.x,fmt="%10.5f")
 else:
     simulated_data=simulate_temps(parameters)
