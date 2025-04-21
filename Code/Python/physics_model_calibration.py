@@ -54,7 +54,7 @@ Gal_min_to_Kg_s           = 0.0466 #(Kg/s)/(Gal/min)
 
 
 
-filtered_data_file_path  = "Code/Data/Run 4/filtered_data.csv"
+filtered_data_file_path  = "Code/Data/Run 2/filtered_data.csv"
 
 
 
@@ -77,7 +77,7 @@ mass_flow_rates             = [None]*num_loops
 for i in range(num_loops):
     mass_flow_rates[i]      = physical_data[:,i+1] * Gal_min_to_Kg_s
 
-heater_flux_true            = physical_data[:,4]
+heater_flux_true            = np.max(physical_data[:,4])*np.ones(num_time_intervals)
 
 temperature_data            = physical_data[:,5:]
 
@@ -518,7 +518,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[224,0.01,0.00821,0,36.96,0,-0.1088,-0.1864,-0.5035,-0.3405,-0.3002,0.5359,0.2733]
+parameters=[256.48739,0.01256,0.00084,0,38.92604,0,-0.05952,0.20490,-0.48540,0.31362,-0.31069,0.50444,0.27330]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,-5,-5,-5,-5,-5,-5,-5],[400,0.1,0.1,1000,1000,1000,5,5,5,5,5,5,5]])
