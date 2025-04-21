@@ -7,12 +7,16 @@ import os
 import sys
 import traceback
 import numpy as np
+import global_run_number as g
 
 # Set Matplotlib backend
 plt.switch_backend("Agg")  # Avoid some GUI conflicts
 
 # File paths
-data_folder = r"C:\Users\DAQ-User\Documents\LabVIEW Data\3Loop\Run 1"
+data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/Run 18"
+
+
+#data_folder= data_folder + str({run_number})
 physical_data_path = os.path.join(data_folder, "filtered_data.csv")
 model_data_path    = os.path.join(data_folder, "simulated_data.csv")
 anomaly_data_path  = os.path.join(data_folder, "anomaly.csv")
@@ -41,34 +45,39 @@ class AnomalyPlotterApp:
         try:
             # Read the latest data (wrapped with file check)
             if not all(map(os.path.exists, [physical_data_path, model_data_path, anomaly_data_path])):
-                print("Waiting for data files...")
+
                 raise FileNotFoundError("One or more data files are missing.")
 
             physical_data = pd.read_csv(physical_data_path, header=None).to_numpy()
+
             model_data = pd.read_csv(model_data_path, header=None).to_numpy()
+
             anomaly_data = pd.read_csv(anomaly_data_path, header=None).to_numpy()
 
             time_physical = physical_data[:, 0]
             time_model = model_data[:, 0]
 
+            current_time = time_physical[-1]
+
+
             self.ax.clear()
 
             # Plot physical temperature
             colors = plt.cm.viridis(np.linspace(0, 1, 7))
-            print(colors)
             for idx, col in enumerate(range(5, physical_data.shape[1]-1)):
                 if col == 11:
-                    self.ax.plot(time_physical, physical_data[:, col+1], label=f"Physical Temp {col-3}", color=colors[idx])
+                    self.ax.plot(physical_data[:,0], physical_data[:, col+1], label=f"Physical Temp {col-3}", color=colors[idx])
                 else:
-                    self.ax.plot(time_physical, physical_data[:, col], label=f"Physical Temp {col-4}", color=colors[idx])
+                    self.ax.plot(physical_data[:,0], physical_data[:, col], label=f"Physical Temp {col-4}", color=colors[idx])
 
 
 
             for idx, col in enumerate(range(1, model_data.shape[1])):
                 if col == 7:
-                    self.ax.plot(time_model, model_data[:, col],'--', label=f"Model Temp {col+1}", color=colors[idx])
+                    self.ax.plot(model_data[:,0], model_data[:, col],'--', label=f"Model Temp {col+1}", color=colors[idx])
+
                 else:
-                                        self.ax.plot(time_model, model_data[:, col],'--', label=f"Model Temp {col}", color=colors[idx])
+                    self.ax.plot(model_data[:,0], model_data[:, col],'--', label=f"Model Temp {col}", color=colors[idx])
             # Plot anomaly regions
             is_anomaly = False
             for i in range(len(anomaly_data)):
@@ -84,10 +93,13 @@ class AnomalyPlotterApp:
 
             # Labels and legend
             self.ax.set_title("Anomaly Detection", fontsize=20)
-            self.ax.set_xlabel("Time", fontsize=16)
-            self.ax.set_ylabel("Temperature", fontsize=16)
+            self.ax.set_xlabel("Time (s)", fontsize=16)
+            self.ax.set_ylabel("Temperature (C)", fontsize=16)
             self.ax.tick_params(axis='both', labelsize=14)
-            self.ax.legend(fontsize=12)
+            from matplotlib.lines import Line2D
+            solid_line= Line2D([0],[0], color= 'black', linestyle='-', label='Physical')
+            dotted_line= Line2D([0],[0], color= 'black', linestyle='--', label='Model')
+            self.ax.legend(handles=[solid_line, dotted_line], fontsize=12)
 
             # Refresh the plot
             self.canvas.draw_idle()
