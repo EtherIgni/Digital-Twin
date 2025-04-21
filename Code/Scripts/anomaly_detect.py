@@ -15,8 +15,7 @@ def anomaly_detection(data_folder_file_path):
     
     # Known standard deviation and model error for each probe (example values)
     # temperatures calibrated with +-0.5 C 
-    k = np.sqrt(3) # coverage factor for 95% confidence interval
-    calibration_error = 0.5 / k  # 0.5 C calibration error
+    calibration_error = 0.5  # assumed std of gaussian calibration error
     std_dev = np.array([0.0288, 0.0337, 0.0260, 0.0483, 0.0330, 0.0288, 0.0398])  # std from noise analysis
     model_error = 0.1  # std of assumed gaussian model error
     
