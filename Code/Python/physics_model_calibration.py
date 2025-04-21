@@ -100,10 +100,10 @@ for i in range(7):
 
 
 
-calibrate_or_plot=True
+calibrate_or_plot=False
 show_geometry=False
 show_gif=False
-show_hist=False
+show_hist=True
 show_plot=True
 def simulate_temps(parameters):
     
@@ -357,9 +357,9 @@ def simulate_temps(parameters):
         
         #Heat Transfer
         for i in range(num_exchangers):
-            heat_exchange_coefficient                   = (heat_exchange_coefficients[0]*np.power(mass_flow_rates[0+i][step-1],-0.8)+
-                                                           heat_exchange_coefficients[1]*np.power(mass_flow_rates[1+i][step-1],-0.8)+
-                                                           heat_exchange_coefficients[2])
+            heat_exchange_coefficient                   = 1/(heat_exchange_coefficients[0]*np.power(mass_flow_rates[0+i][step-1],-0.8)+
+                                                             heat_exchange_coefficients[1]*np.power(mass_flow_rates[1+i][step-1],-0.8)+
+                                                             heat_exchange_coefficients[2])
             exchanger_curve                             = np.linspace(0, heat_exchanger_main_length, num_nodes_in_exchanger[i])
             heat_flux                                   = heat_exchange_coefficient*(np.interp(exchanger_curve+heat_exchanger_positions[i,0],                           flow_curves[i],   temp_curve[i][step])-
                                                                                      np.interp(heat_exchanger_positions[i,1]+heat_exchanger_main_length-exchanger_curve, flow_curves[i+1], temp_curve[i+1][step]))
@@ -518,7 +518,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[256.48739,0.01256,0.00084,0,38.92604,0,-0.05952,0.20490,-0.48540,0.31362,-0.31069,0.50444,0.27330]
+parameters=[130.98053,0.00429,0.00006,239.07240,0.00003,0.07249,0,0,0,0,0,0,0]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,-5,-5,-5,-5,-5,-5,-5],[400,0.1,0.1,1000,1000,1000,5,5,5,5,5,5,5]])
@@ -530,9 +530,11 @@ else:
 
 if(show_hist):
     error_data=((simulated_data-true_temp_data)).flatten()
+    relative_error_data=((simulated_data-true_temp_data)/true_temp_data).flatten()
     plt.hist(error_data,bins=50)
     plt.show()
     print(np.std(error_data))
+    print(np.mean(np.abs(relative_error_data)))
 
 
 if(show_plot):
