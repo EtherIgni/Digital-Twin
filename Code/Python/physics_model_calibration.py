@@ -420,13 +420,13 @@ def simulate_temps(parameters):
 
 
     simulated_data=np.zeros((time_grid.size,7))
-    simulated_data[:,0]=simulated_probe_temps[0][:,3]+parameters[5]
-    simulated_data[:,1]=simulated_probe_temps[0][:,0]+parameters[6]
-    simulated_data[:,2]=simulated_probe_temps[0][:,1]+parameters[7]
-    simulated_data[:,3]=simulated_probe_temps[0][:,2]+parameters[8]
-    simulated_data[:,4]=simulated_probe_temps[1][:,0]+parameters[9]
-    simulated_data[:,5]=simulated_probe_temps[1][:,1]+parameters[10]
-    simulated_data[:,6]=simulated_probe_temps[2][:,0]+parameters[11]
+    simulated_data[:,0]=simulated_probe_temps[0][:,3]
+    simulated_data[:,1]=simulated_probe_temps[0][:,0]
+    simulated_data[:,2]=simulated_probe_temps[0][:,1]
+    simulated_data[:,3]=simulated_probe_temps[0][:,2]
+    simulated_data[:,4]=simulated_probe_temps[1][:,0]
+    simulated_data[:,5]=simulated_probe_temps[1][:,1]
+    simulated_data[:,6]=simulated_probe_temps[2][:,0]
 
 
     if(show_gif):
@@ -518,10 +518,10 @@ def simulate_temps(parameters):
     
 
 
-parameters=[130.98053,0.00429,0.00006,239.07240,0.00003,0.07249,0,0,0,0,0,0,0]
+parameters=[130.26846,0.00435,0.00006,-509.26024,-542.71592,-0.56648]
 
 if(calibrate_or_plot):
-    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,-1000,-1000,-1000,-5,-5,-5,-5,-5,-5,-5],[400,0.1,0.1,1000,1000,1000,5,5,5,5,5,5,5]])
+    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,-1000,-1000,-1000],[400,0.1,0.1,1000,1000,1000]])
     np.savetxt("calibration Results.txt",results.x,fmt="%10.5f")
 else:
     simulated_data=simulate_temps(parameters)
