@@ -100,7 +100,7 @@ for i in range(7):
 
 
 
-calibrate_or_plot=True
+calibrate_or_plot=False
 show_geometry=False
 show_gif=False
 show_hist=True
@@ -120,7 +120,7 @@ def simulate_temps(parameters):
                                         heat_exchanger_area_total*(1-heat_exchanger_area_ratio)])
     heat_exchanger_cap_area    = parameters[2]
     num_nodes_in_exchanger     = np.array([50,50])
-    heat_exchange_coefficients = np.array([parameters[3],parameters[4],parameters[5]])
+    heat_exchange_coefficients = np.array([parameters[3],parameters[4]])
 
     heater_length              = 1.143
     heater_area                = 0.004188254 
@@ -357,12 +357,9 @@ def simulate_temps(parameters):
         
         #Heat Transfer
         for i in range(num_exchangers):
-            heat_exchange_coefficient                   = 1/(heat_exchange_coefficients[0]*np.power(mass_flow_rates[0+i][step-1],-0.8)+
-                                                             heat_exchange_coefficients[1]*np.power(mass_flow_rates[1+i][step-1],-0.8)+
-                                                             heat_exchange_coefficients[2])
             exchanger_curve                             = np.linspace(0, heat_exchanger_main_length, num_nodes_in_exchanger[i])
-            heat_flux                                   = heat_exchange_coefficient*(np.interp(exchanger_curve+heat_exchanger_positions[i,0],                           flow_curves[i],   temp_curve[i][step])-
-                                                                                     np.interp(heat_exchanger_positions[i,1]+heat_exchanger_main_length-exchanger_curve, flow_curves[i+1], temp_curve[i+1][step]))
+            heat_flux                                   = heat_exchange_coefficients[i]*(np.interp(exchanger_curve+heat_exchanger_positions[i,0],                           flow_curves[i],   temp_curve[i][step])-
+                                                                                         np.interp(heat_exchanger_positions[i,1]+heat_exchanger_main_length-exchanger_curve, flow_curves[i+1], temp_curve[i+1][step]))
             
             for j in range(2):
                 sub_grid_indices                        = np.where(np.logical_and(flow_curves[j+i]>heat_exchanger_positions[i,j],
@@ -518,7 +515,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[130.26846,0.00435,0.00006,-509.26024,-542.71592,-0.56648]
+parameters=[109.18471,0.01,0.01,500,500]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,-1000,-1000,-1000],[400,0.1,0.1,1000,1000,1000]])
