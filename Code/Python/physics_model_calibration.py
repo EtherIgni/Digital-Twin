@@ -105,7 +105,7 @@ for i in range(7):
 
 
 
-calibrate_or_plot=False
+calibrate_or_plot=True
 show_geometry=False
 show_gif=False
 show_hist=False
