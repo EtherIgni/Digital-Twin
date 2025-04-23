@@ -102,7 +102,7 @@ for i in range(7):
 
 calibrate_or_plot=True
 show_geometry=False
-show_gif=False
+show_gif=True
 show_hist=False
 show_plot=True
 def simulate_temps(parameters):
@@ -145,9 +145,9 @@ def simulate_temps(parameters):
                   large_tank_length,
                   small_tank_length]
     tank_loop=[0,0,1]
-    mix_percentages=[0.5,
-                     0.5,
-                     0.5]
+    mix_percentages=[parameters[5],
+                     parameters[6],
+                     parameters[7]]
 
 
 
@@ -537,10 +537,10 @@ def simulate_temps(parameters):
     
 
 
-parameters=[109.18490,0.001,0.001,500,500]
+parameters=[109.18490,0.001,0.001,500,500,0.5,0.5,0.5]
 
 if(calibrate_or_plot):
-    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0],[400,0.1,0.1,1000,1000]])
+    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0],[400,0.1,0.1,1000,1000,1,1,1]])
     np.savetxt("calibration Results.txt",results.x,fmt="%10.5f")
 else:
     simulated_data=simulate_temps(parameters)
