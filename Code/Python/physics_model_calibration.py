@@ -70,12 +70,12 @@ physical_data               = pd.read_csv(filtered_data_file_path,index_col=Fals
 physical_data               = np.array(physical_data)
 
 time_grid_real              = physical_data[:,0]
-num_time_intervals          = len(time_grid_real)
+num_time_intervals          = len(time_grid_real)*10
 time_grid, time_spacing     = np.linspace(np.min(time_grid_real),np.max(time_grid_real),num_time_intervals,retstep=True)
 
 mass_flow_rates             = [None]*num_loops
 for i in range(num_loops):
-    mass_flow_rates[i]      = physical_data[:,i+1] * Gal_min_to_Kg_s
+    mass_flow_rates[i]      = np.interp(time_grid,time_grid_real,physical_data[:,i+1]) * Gal_min_to_Kg_s
 
 heater_flux_true            = np.max(physical_data[:,4])*np.ones(num_time_intervals)
 
@@ -103,7 +103,7 @@ for i in range(7):
 calibrate_or_plot=True
 show_geometry=False
 show_gif=False
-show_hist=True
+show_hist=False
 show_plot=True
 def simulate_temps(parameters):
     
@@ -136,6 +136,18 @@ def simulate_temps(parameters):
     pipe_lengths_2             = [0.6858,0.5969,2.7178]
     pipe_lengths_3             = [0.2413,0.762]
     pipe_area                  = 0.00053652265
+    
+    num_tanks=3
+    tank_positions=[2.2606,
+                    7.1755,
+                    1.2065]
+    tank_lengths=[large_tank_length,
+                  large_tank_length,
+                  small_tank_length]
+    tank_loop=[0,0,1]
+    mix_percentages=[0.5,
+                     0.5,
+                     0.5]
 
 
 
@@ -413,6 +425,16 @@ def simulate_temps(parameters):
         #Logs temperature at probs
         for i in range(num_loops):
             simulated_probe_temps[i][step] = np.interp(thermo_probe_positions[i], flow_curves[i], temp_curve[i][step])
+            
+        
+        
+        #Tank Mixing
+        for i in range(num_tanks):
+            tank_indices=np.where(np.logical_and(flow_curves[tank_loop[i]]>tank_positions[i],
+                                                 flow_curves[tank_loop[i]]<=tank_positions[i]+tank_lengths[i]))[0]
+            drawn_temps=temp_curve[tank_loop[i]][step][tank_indices]*mix_percentages[i]
+            average_temps=np.mean(drawn_temps)*np.ones(drawn_temps.size)
+            temp_curve[tank_loop[i]][step][tank_indices]=temp_curve[tank_loop[i]][step][tank_indices]-drawn_temps+average_temps
 
 
 
@@ -515,7 +537,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[109.18471,0.01,0.01,500,500]
+parameters=[109.18490,0.001,0.001,500,500]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0],[400,0.1,0.1,1000,1000]])
