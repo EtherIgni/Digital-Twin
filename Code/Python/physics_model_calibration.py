@@ -537,10 +537,10 @@ def simulate_temps(parameters):
     
 
 
-parameters=[109.18490,0.001,0.001,500,500,0.5,0.5,0.5]
+parameters=[160.11529,0.00484,0.00739,1000,735.14429,0.65744,0.37491,0.99479,0.0791730436,0.00809921437]
 
 if(calibrate_or_plot):
-    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0],[400,0.1,0.1,1000,1000,1,1,1]])
+    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0,0,0],[400,0.1,0.1,2000,2000,1,1,1,1,1]])
     np.savetxt("calibration Results.txt",results.x,fmt="%10.5f")
 else:
     simulated_data=simulate_temps(parameters)
