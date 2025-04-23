@@ -133,10 +133,10 @@ def simulate_temps(parameters):
     heater_area                = 0.004188254 
 
     large_tank_length          = 0.762
-    large_tank_area            = 0.0791730436
+    large_tank_area            = parameters[8]
 
     small_tank_length          = 0.6223
-    small_tank_area            = 0.00809921437
+    small_tank_area            = parameters[9]
 
 
     pipe_lengths_1             = [1.1176,1.3716,2.8448,1.27]
@@ -488,7 +488,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[275.55258,0.00273,0.03454,1600,1000,0.6,0.6,0.4,0.0791730436,0.00809921437]
+parameters=[316.93,0.00323,0.03616,1648.16,1039.43,0.262,0.5988,0.7426,0.0791730436,0.00809921437]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0,0,0],[400,0.1,0.1,2000,2000,1,1,1,1,1]])
