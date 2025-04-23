@@ -7,6 +7,9 @@ import pandas as pd
 from matplotlib.widgets import Button, Slider
 import time
 from scipy.ndimage import convolve1d
+import pickle
+
+from Modules.update_temp_curve import update_Temperature
 
 
 
@@ -54,7 +57,7 @@ Gal_min_to_Kg_s           = 0.0466 #(Kg/s)/(Gal/min)
 
 
 
-filtered_data_file_path  = "Code/Data/Run 2/filtered_data.csv"
+filtered_data_file_path  = "Code/Data/Run 5/filtered_data.csv"
 
 
 
@@ -69,17 +72,23 @@ pump_controller_conversions = [2.8, 3.6, 0.75]
 physical_data               = pd.read_csv(filtered_data_file_path,index_col=False,header=None)
 physical_data               = np.array(physical_data)
 
+
 time_grid_real              = physical_data[:,0]
-num_time_intervals          = len(time_grid_real)
+num_time_intervals          = len(time_grid_real)*10
 time_grid, time_spacing     = np.linspace(np.min(time_grid_real),np.max(time_grid_real),num_time_intervals,retstep=True)
 
 mass_flow_rates             = [None]*num_loops
 for i in range(num_loops):
-    mass_flow_rates[i]      = np.ones(num_time_intervals)*np.mean(physical_data[:,i+1]) * Gal_min_to_Kg_s
+    mass_flow_rates[i]      = np.interp(time_grid,time_grid_real,physical_data[:,i+1]) * Gal_min_to_Kg_s
 
-heater_flux_true            = np.ones(num_time_intervals)*np.max(physical_data[:,4])
+heater_flux_true            = np.max(physical_data[:,4])*np.ones(num_time_intervals)
 
 temperature_data            = physical_data[:,5:]
+temperature_data_transfer   = np.copy(temperature_data[:,:4])
+temperature_data[:,0]       = temperature_data_transfer[:,3]
+temperature_data[:,1]       = temperature_data_transfer[:,2]
+temperature_data[:,2]       = temperature_data_transfer[:,1]
+temperature_data[:,3]       = temperature_data_transfer[:,0]
 
 avg_kernel                          = np.ones(100)/100
 for i in range(temperature_data.shape[1]):
@@ -98,28 +107,13 @@ for i in range(7):
     true_temp_data[:,i]     = np.interp(time_grid,time_grid_real,temperature_data[:,j])
 
 
-# plt.plot(time_grid, mass_flow_rates[0], label="Pump input 1", color="green")
-# plt.plot(time_grid, mass_flow_rates[1], label="Pump input 2", color="blue")
-# plt.plot(time_grid, mass_flow_rates[2], label="Pump input 3", color="red")
-# plt.plot(time_grid, heater_flux[:], label="Heater input", color="orange")
-
-# plt.legend()
-# plt.xlabel("Time (s)")
-# plt.ylabel("Input Voltage (V)")
-
-# plt.show()
-
-# plt.plot(time_grid_real)
-# plt.plot(time_grid_real)
-# plt.show()
 
 
-
-
-disable_gid=True
-disable_plot=False
-error_or_data=False
-disable_hist=True
+calibrate_or_plot=False
+show_geometry=False
+show_gif=False
+show_hist=False
+show_plot=True
 def simulate_temps(parameters):
     
     heater_conversion          = parameters[0]
@@ -129,28 +123,40 @@ def simulate_temps(parameters):
                                            [2.5146,0.2413]])
     heat_exchanger_main_length = 0.5207
     heat_exchanger_cap_length  = 0.0889
-    heat_exchanger_area_ratio  = parameters[1]
-    heat_exchanger_area_total  = parameters[2]
+    heat_exchanger_area_ratio  = 0.6
+    heat_exchanger_area_total  = parameters[1]
     heat_exchanger_areas       = np.array([heat_exchanger_area_total*heat_exchanger_area_ratio,
                                         heat_exchanger_area_total*(1-heat_exchanger_area_ratio)])
-    heat_exchanger_cap_area    = parameters[3]
+    heat_exchanger_cap_area    = parameters[2]
     num_nodes_in_exchanger     = np.array([50,50])
-    heat_exchange_coefficients = np.array([parameters[4],parameters[5]])
+    heat_exchange_coefficients = np.array([parameters[3],parameters[4]])
 
     heater_length              = 1.143
     heater_area                = 0.004188254 
 
     large_tank_length          = 0.762
-    large_tank_area            = 0.0791730436
+    large_tank_area            = parameters[8]
 
     small_tank_length          = 0.6223
-    small_tank_area            = 0.00809921437
+    small_tank_area            = parameters[9]
 
 
     pipe_lengths_1             = [1.1176,1.3716,2.8448,1.27]
     pipe_lengths_2             = [0.6858,0.5969,2.7178]
     pipe_lengths_3             = [0.2413,0.762]
     pipe_area                  = 0.00053652265
+    
+    num_tanks=3
+    tank_positions=[2.2606,
+                    7.1755,
+                    1.2065]
+    tank_lengths=[large_tank_length,
+                  large_tank_length,
+                  small_tank_length]
+    tank_loop=[0,0,1]
+    mix_percentages=[parameters[5],
+                     parameters[6],
+                     parameters[7]]
 
 
 
@@ -259,70 +265,70 @@ def simulate_temps(parameters):
 
 
 
+    if(show_geometry):
+        fig, ax = plt.subplots(3)
 
-    # fig, ax = plt.subplots(3)
+        y_bounds=[0,1]
 
-    # y_bounds=[0,1]
+        ax[0].vlines(np.sum(segment_lengths[0][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[0].vlines(np.sum(segment_lengths[0][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[0].vlines(np.sum(segment_lengths[0][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[0].vlines(np.sum(segment_lengths[0][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[0].vlines(np.sum(segment_lengths[0][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[0].vlines(np.sum(segment_lengths[0][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[0].vlines(np.sum(segment_lengths[0][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:8]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(np.sum(segment_lengths[0][:9]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[0].vlines(np.sum(segment_lengths[0][:8]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[0].vlines(np.sum(segment_lengths[0][:9]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[0].vlines(thermo_probe_positions[0][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[0].vlines(thermo_probe_positions[0][1], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[0].vlines(thermo_probe_positions[0][2], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[0].vlines(thermo_probe_positions[0][3], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
 
-    # ax[0].vlines(thermo_probe_positions[0][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    # ax[0].vlines(thermo_probe_positions[0][1], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    # ax[0].vlines(thermo_probe_positions[0][2], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    # ax[0].vlines(thermo_probe_positions[0][3], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[0].fill_between([np.sum(segment_lengths[0][:0]),np.sum(segment_lengths[0][:1])], y_bounds[0], y_bounds[1], color='yellow', alpha=0.3)
+        ax[0].fill_between([np.sum(segment_lengths[0][:2]),np.sum(segment_lengths[0][:3])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
+        ax[0].fill_between([np.sum(segment_lengths[0][:4]),np.sum(segment_lengths[0][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+        ax[0].fill_between([np.sum(segment_lengths[0][:5]),np.sum(segment_lengths[0][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+        ax[0].fill_between([np.sum(segment_lengths[0][:6]),np.sum(segment_lengths[0][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+        ax[0].fill_between([np.sum(segment_lengths[0][:8]),np.sum(segment_lengths[0][:9])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
 
-    # ax[0].fill_between([np.sum(segment_lengths[0][:0]),np.sum(segment_lengths[0][:1])], y_bounds[0], y_bounds[1], color='yellow', alpha=0.3)
-    # ax[0].fill_between([np.sum(segment_lengths[0][:2]),np.sum(segment_lengths[0][:3])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
-    # ax[0].fill_between([np.sum(segment_lengths[0][:4]),np.sum(segment_lengths[0][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-    # ax[0].fill_between([np.sum(segment_lengths[0][:5]),np.sum(segment_lengths[0][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-    # ax[0].fill_between([np.sum(segment_lengths[0][:6]),np.sum(segment_lengths[0][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-    # ax[0].fill_between([np.sum(segment_lengths[0][:8]),np.sum(segment_lengths[0][:9])], y_bounds[0], y_bounds[1], color='blue', alpha=0.3)
+        ax[0].set_ylim(y_bounds[0],y_bounds[1])
+        ax[0].set_xlim(np.min(flow_curves[0]),np.max(flow_curves[0]))
 
-    # ax[0].set_ylim(y_bounds[0],y_bounds[1])
-    # ax[0].set_xlim(np.min(flow_curves[0]),np.max(flow_curves[0]))
+        ax[1].vlines(np.sum(segment_lengths[1][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[1].vlines(np.sum(segment_lengths[1][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[1].vlines(np.sum(segment_lengths[1][:0]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[1].vlines(np.sum(segment_lengths[1][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[1].vlines(np.sum(segment_lengths[1][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[1].vlines(np.sum(segment_lengths[1][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[1].vlines(np.sum(segment_lengths[1][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[1].vlines(np.sum(segment_lengths[1][:3]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[1].vlines(np.sum(segment_lengths[1][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[1].vlines(np.sum(segment_lengths[1][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[1].vlines(np.sum(segment_lengths[1][:4]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[1].vlines(np.sum(segment_lengths[1][:7]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[1].vlines(thermo_probe_positions[1][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[1].vlines(thermo_probe_positions[1][1], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
 
-    # ax[1].vlines(thermo_probe_positions[1][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
-    # ax[1].vlines(thermo_probe_positions[1][1], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[1].fill_between([np.sum(segment_lengths[1][:0]),np.sum(segment_lengths[1][:1])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+        ax[1].fill_between([np.sum(segment_lengths[1][:2]),np.sum(segment_lengths[1][:3])], y_bounds[0], y_bounds[1], color='cyan', alpha=0.3)
+        ax[1].fill_between([np.sum(segment_lengths[1][:4]),np.sum(segment_lengths[1][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+        ax[1].fill_between([np.sum(segment_lengths[1][:5]),np.sum(segment_lengths[1][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+        ax[1].fill_between([np.sum(segment_lengths[1][:6]),np.sum(segment_lengths[1][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
 
-    # ax[1].fill_between([np.sum(segment_lengths[1][:0]),np.sum(segment_lengths[1][:1])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-    # ax[1].fill_between([np.sum(segment_lengths[1][:2]),np.sum(segment_lengths[1][:3])], y_bounds[0], y_bounds[1], color='cyan', alpha=0.3)
-    # ax[1].fill_between([np.sum(segment_lengths[1][:4]),np.sum(segment_lengths[1][:5])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
-    # ax[1].fill_between([np.sum(segment_lengths[1][:5]),np.sum(segment_lengths[1][:6])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
-    # ax[1].fill_between([np.sum(segment_lengths[1][:6]),np.sum(segment_lengths[1][:7])], y_bounds[0], y_bounds[1], color='pink', alpha=0.3)
+        ax[1].set_ylim(y_bounds[0],y_bounds[1])
+        ax[1].set_xlim(np.min(flow_curves[1]),np.max(flow_curves[1]))
 
-    # ax[1].set_ylim(y_bounds[0],y_bounds[1])
-    # ax[1].set_xlim(np.min(flow_curves[1]),np.max(flow_curves[1]))
+        ax[2].vlines(np.sum(segment_lengths[2][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[2].vlines(np.sum(segment_lengths[2][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
 
-    # ax[2].vlines(np.sum(segment_lengths[2][:1]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
-    # ax[2].vlines(np.sum(segment_lengths[2][:2]), y_bounds[0], y_bounds[1], color="grey", linestyles="dashed", zorder=-1)
+        ax[2].vlines(thermo_probe_positions[2][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
 
-    # ax[2].vlines(thermo_probe_positions[2][0], y_bounds[0], y_bounds[1], color="black", linestyles="dotted", zorder=-1)
+        ax[2].fill_between([np.sum(segment_lengths[2][:1]),np.sum(segment_lengths[2][:2])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
 
-    # ax[2].fill_between([np.sum(segment_lengths[2][:1]),np.sum(segment_lengths[2][:2])], y_bounds[0], y_bounds[1], color='red', alpha=0.3)
+        ax[2].set_ylim(y_bounds[0],y_bounds[1])
+        ax[2].set_xlim(np.min(flow_curves[2]),np.max(flow_curves[2]))
 
-    # ax[2].set_ylim(y_bounds[0],y_bounds[1])
-    # ax[2].set_xlim(np.min(flow_curves[2]),np.max(flow_curves[2]))
-
-    # plt.show()
+        plt.show()
 
 
 
@@ -342,92 +348,54 @@ def simulate_temps(parameters):
 
     comp_time_initial = time.time()
 
-    for step in range(1, num_time_intervals):
-        time_diff = time_grid[step] - time_grid[step-1]
+    geometry_dict={"Node Areas":area_curves,
+                   "Node Positions":flow_curves,
+                   "Loop Lengths":loop_lengths,
+                   "Number Exchangers":num_exchangers,
+                   "Number Loops":num_loops,
+                   "Exchanger Node Count":num_nodes_in_exchanger,
+                   "Exchanger Positions":heat_exchanger_positions,
+                   "Exchanger Main Length":heat_exchanger_main_length,
+                   "Tank Positions":tank_positions,
+                   "Tank Lengths":tank_lengths,
+                   "Thermometer Positions":thermo_probe_positions,
+                   "Exchanger Areas":heat_exchanger_areas,
+                   "Heater Length":heater_length,
+                   "Heater Areas":heater_area,
+                   "Number Tanks":num_tanks,
+                   "Loop of Tank":tank_loop}
+    constants_dict={"Water Density":density_water,
+                   "Water Specific Heat":specific_heat_water}
+    parameters_dict={"Exchange Coefficients":heat_exchange_coefficients,
+                    "Mix Percentages":mix_percentages,
+                    "Heater Conversion":heater_conversion}
+    
+    with open("Code/Scripts/physics_stuff/calibrated_model_information/geometry.pkl","wb") as file:
+        pickle.dump(geometry_dict,file)
+    with open("Code/Scripts/physics_stuff/calibrated_model_information/constants.pkl","wb") as file:
+        pickle.dump(constants_dict,file)
+    with open("Code/Scripts/physics_stuff/calibrated_model_information/parameters.pkl","wb") as file:
+        pickle.dump(parameters_dict,file)
 
-        #Heat Shift
-        for i in range(num_loops):
-            #Calculate fluid flow distance
-            travel_distances        = mass_flow_rates[i][step-1]*time_diff/(density_water*area_curves[i])
-            
-            #Rotate and re-interpolate temperature data
-            new_positions           = flow_curves[i]+travel_distances
-            if(i==2):
-                keep_indices        = np.where(new_positions<=loop_lengths[i])[0]
-                new_positions       = np.concat([[0],new_positions[keep_indices]])
-                interp_temps        = np.concat([[inlet_temps[step-1]],temp_curve[i][step-1][keep_indices]])
-                
-                sort_indices        = np.argsort(new_positions)
-                temp_curve[i][step] = np.interp(flow_curves[i],
-                                                new_positions[sort_indices],
-                                                interp_temps[sort_indices])
-            else:
-                sort_indices        = np.argsort(new_positions)
-                temp_curve[i][step] = np.interp(flow_curves[i],
-                                                new_positions[sort_indices],
-                                                temp_curve[i][step-1][sort_indices],
-                                                period=loop_lengths[i])
-        
-        
-        
-        #Heat Transfer
-        for i in range(num_exchangers):
-            exchanger_curve                             = np.linspace(0, heat_exchanger_main_length, num_nodes_in_exchanger[i])
-            heat_flux                                   = heat_exchange_coefficients[i]*(np.interp(exchanger_curve+heat_exchanger_positions[i,0],                           flow_curves[i],   temp_curve[i][step])-
-                                                                                        np.interp(heat_exchanger_positions[i,1]+heat_exchanger_main_length-exchanger_curve, flow_curves[i+1], temp_curve[i+1][step]))
-            
-            for j in range(2):
-                sub_grid_indices                        = np.where(np.logical_and(flow_curves[j+i]>heat_exchanger_positions[i,j],
-                                                                                flow_curves[j+i]<heat_exchanger_positions[i,j]+heat_exchanger_main_length))[0]
-                next_index                              = np.max(sub_grid_indices)+1 
-                
-                sub_grid                                = np.ones(sub_grid_indices.size+2)
-                sub_grid[0]                             = heat_exchanger_positions[i,j]
-                sub_grid[-1]                            = heat_exchanger_positions[i,j]+heat_exchanger_main_length
-                sub_grid[1:-1]                          = flow_curves[j+i][sub_grid_indices]
-                
-                matched_heat_flux                       = np.interp(sub_grid-heat_exchanger_positions[i,j], exchanger_curve, heat_flux)
-                if(j>0):
-                    matched_heat_flux                   = np.flip(matched_heat_flux)
-                
-                
-                exchanger_travel_distance           = np.ones(sub_grid.size-1)*time_diff/(density_water*heat_exchanger_areas[j])
-                if(mass_flow_rates[j+i][step-1]>0):
-                    transfer_areas                  = np.min(np.stack((exchanger_travel_distance,
-                                                            (sub_grid[1:]-sub_grid[:-1])/mass_flow_rates[j+i][step-1])),
-                                                            0)
-                else:
-                    transfer_areas                  = exchanger_travel_distance
-                
-                heat_transfer                       = ((matched_heat_flux[1:]+matched_heat_flux[:-1])/2) * transfer_areas * (j*2-1) / specific_heat_water
-                fill_indices                        = np.concat([sub_grid_indices,np.array([next_index])])
-                temp_curve[j+i][step][fill_indices] = temp_curve[j+i][step][fill_indices] + heat_transfer
-        
-        
-        
-        #Heater Heat Input
-        sub_grid_indices                    = np.where(np.logical_and(flow_curves[0]>0,
-                                                                flow_curves[0]<heater_length))[0]
-        next_index                          = np.max(sub_grid_indices)+1
-        fill_indices                        = np.concat([sub_grid_indices,np.array([next_index])])
-        
-        heater_travel_distance              = np.ones(fill_indices.size)*time_diff/(density_water*heater_area)
-        if(mass_flow_rates[0][step-1]>0):
-            grid_sizes                      = (flow_curves[0][fill_indices]-np.concat([[0], flow_curves[0][fill_indices][:-1]]))/mass_flow_rates[0][step-1]
-            heater_transfer_areas           = np.min(np.stack((heater_travel_distance,
-                                                    grid_sizes)),
-                                                    0)
-        else:
-            heater_transfer_areas           = heater_travel_distance
-        
-        heat_transfer                       = heater_flux[step-1] * transfer_areas / specific_heat_water
-        temp_curve[0][step][fill_indices]   = temp_curve[0][step][fill_indices] + heat_transfer
-        
-        
-        
-        #Logs temperature at probs
-        for i in range(num_loops):
-            simulated_probe_temps[i][step] = np.interp(thermo_probe_positions[i], flow_curves[i], temp_curve[i][step])
+    for step in range(1, num_time_intervals):
+        nodal_temps=[None]*3
+        for i in range(3):
+            nodal_temps[i]=temp_curve[i][step-1]
+        mass_flow_rates_step=[None]*3
+        for i in range(3):
+            mass_flow_rates_step[i]=mass_flow_rates[i][step-1]
+        temp_curve_step,simulated_probes_step=update_Temperature(nodal_temps,
+                                                                 geometry_dict,
+                                                                 constants_dict,
+                                                                 parameters_dict,
+                                                                 inlet_temps[step-1],
+                                                                 time_grid[step]-time_grid[step-1],
+                                                                 heater_flux[step],
+                                                                 mass_flow_rates_step)
+        for i in range(3):
+            temp_curve[i][step]=temp_curve_step[i]
+        for i in range(3):
+            simulated_probe_temps[i][step]=simulated_probes_step[i]
 
 
 
@@ -441,7 +409,7 @@ def simulate_temps(parameters):
     simulated_data[:,6]=simulated_probe_temps[2][:,0]
 
 
-    if(not(disable_gid)):
+    if(show_gif):
         fig, ax = plt.subplots(3)
         fig.set_figheight(20)
         fig.set_figwidth(7)
@@ -523,28 +491,34 @@ def simulate_temps(parameters):
         # gif.save('Code/Images/Loop_Model.gif', writer=writer)
         plt.show()
     
-    if(error_or_data):
+    if(calibrate_or_plot):
         return(((simulated_data-true_temp_data)).flatten())
     else:
         return(simulated_data)
     
 
 
-parameters=[75.83,0.6,0.00222,0.00302,733,508]
+parameters=[398.72927,0.00434,0.02699,1590.10831,1023.63564,0.03767,0.13507,0.99143,0.0712,0.00358]
 
-simulated_data=simulate_temps(parameters)
+if(calibrate_or_plot):
+    results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0,0,0],[400,0.1,0.1,2000,2000,1,1,1,1,1]])
+    np.savetxt("calibration Results.txt",results.x,fmt="%10.5f")
+else:
+    simulated_data=simulate_temps(parameters)
 
-# results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0],[200,1,0.01,0.01,1000,1000]])
-# np.savetxt("calibration Results.txt",results.x)
 
-if(not(disable_hist)):
-    plt.hist(simulated_data,bins=50)
+
+if(show_hist):
+    error_data=((simulated_data-true_temp_data)).flatten()
+    relative_error_data=((simulated_data-true_temp_data)/true_temp_data).flatten()
+    plt.hist(error_data,bins=50)
     plt.show()
-    print(np.std(simulated_data))
+    print(np.std(error_data))
+    print(np.mean(np.abs(relative_error_data)))
 
 
-if(not(disable_plot)):
-    fix, ax   = plt.subplots(num_loops)
+if(show_plot):
+    fix, ax   = plt.subplots(num_loops+1)
 
     ax[0].plot(time_grid, simulated_data[:,0], linestyle="dashed", label="Simulated Temp 1", color="green")
     ax[0].plot(time_grid, simulated_data[:,1], linestyle="dashed", label="Simulated Temp 2", color="blue")
@@ -567,9 +541,15 @@ if(not(disable_plot)):
 
     ax[2].plot(time_grid_real, temperature_data[:,6], label="True Temp  1", color="green")
     ax[2].plot(time_grid_real, temperature_data[:,7], label="True Temp  2", color="red")
+    
+    ax[3].plot(time_grid, mass_flow_rates[0], label="Pump input 1", color="green")
+    ax[3].plot(time_grid, mass_flow_rates[1], label="Pump input 2", color="blue")
+    ax[3].plot(time_grid, mass_flow_rates[2], label="Pump input 3", color="red")
+    ax[3].plot(time_grid, heater_flux_true[:], label="Heater input", color="orange")
 
     ax[0].legend()
     ax[1].legend()
     ax[2].legend()
+    ax[3].legend()
 
     plt.show()
