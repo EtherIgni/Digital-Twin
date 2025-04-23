@@ -488,7 +488,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[154.32904,0.00413,0.02390,1678.9,1116.5,0.1,0.1,0.01,0.0791730436,0.00809921437]
+parameters=[275.55258,0.00273,0.03454,1600,1000,0.6,0.6,0.4,0.0791730436,0.00809921437]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0,0,0],[400,0.1,0.1,2000,2000,1,1,1,1,1]])
