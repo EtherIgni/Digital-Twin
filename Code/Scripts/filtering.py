@@ -14,8 +14,13 @@ def filter_Data(data_folder_file_path):
     for series in range(1,4):
         for i in range(10):
                 filtered_data[:,series] = convolve1d(unfiltered_data[:,series],  avg_kernel)
-                
-    filtered_data[:,4]     = np.ones(unfiltered_data.shape[0])*np.max(unfiltered_data[:,4])
+
+    with open(data_folder_file_path + "control.txt",'r') as control:
+            L = control.readline()
+    if L =="":            
+        filtered_data[:,4]     = np.ones(unfiltered_data.shape[0])*np.max(unfiltered_data[:,4])
+    else: 
+        filtered_data[:,4]     = np.ones(unfiltered_data.shape[0])*np.max(unfiltered_data[:int(L),4])
     
     avg_kernel                          = np.ones(100)/100
     for series in range(5,13):

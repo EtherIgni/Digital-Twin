@@ -13,7 +13,7 @@ import global_run_number as g
 plt.switch_backend("Agg")  # Avoid some GUI conflicts
 
 # File paths
-data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/Run 18"
+data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/Run 1"
 
 
 #data_folder= data_folder + str({run_number})
@@ -50,7 +50,7 @@ class AnomalyPlotterApp:
 
             physical_data = pd.read_csv(physical_data_path, header=None).to_numpy()
 
-            model_data = pd.read_csv(model_data_path, header=None).to_numpy()
+            model_data = pd.read_csv(model_data_path, header=None).to_numpy()[:,:8]
 
             anomaly_data = pd.read_csv(anomaly_data_path, header=None).to_numpy()
 

@@ -5,13 +5,13 @@ import pandas as pd
 
 def anomaly_detection(data_folder_file_path):
     # Load physical and model temperature data from .csv
-    physical_data = pd.read_csv(data_folder_file_path + "filtered_data.csv", delimiter=",",index_col=False, header=None).tail(100).to_numpy()
-    model_data = pd.read_csv(data_folder_file_path + "simulated_data.csv", delimiter=",", index_col=False, header=None).tail(100).to_numpy()
+    physical_data = pd.read_csv(data_folder_file_path + "filtered_data.csv", delimiter=",",index_col=False, header=None).tail(10).to_numpy()
+    model_data = pd.read_csv(data_folder_file_path + "simulated_data.csv", delimiter=",", index_col=False, header=None).tail(10).to_numpy()
     
     time = physical_data[:, 0].copy().reshape(-1, 1)  # time data
     physical_temps = physical_data[:, 5:].copy()  # physical temperatures
     physical_temps = np.delete(physical_temps, 6, axis=1)  # remove temperature probe 7, which is an input to the model
-    model_temps = model_data[:, 1:].copy()  # model temperatures
+    model_temps = model_data[:, 1:8].copy()  # model temperatures
     
     # Known standard deviation and model error for each probe (example values)
     # temperatures calibrated with +-0.5 C 
@@ -29,8 +29,8 @@ def anomaly_detection(data_folder_file_path):
     flagged_residuals = np.abs(residuals) > thresholds  # Compare each column with its corresponding threshold
     
     # Check for anomalies over a range
-    range_size = 25  # subject to change
-    anomaly_threshold = 12  # Number of flagged residuals to consider as an anomaly
+    range_size = 10  # subject to change
+    anomaly_threshold = 6  # Number of flagged residuals to consider as an anomaly
     
     # Initialize anomaly detection over ranges for each case
     anomalies_range = np.zeros_like(residuals, dtype=bool)

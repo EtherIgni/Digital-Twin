@@ -87,10 +87,22 @@ def simulate_Data(data_folder_file_path,Heater,Pump1,Pump2,Wall):
 
                 
 
+    if Heater == 0:
+        heater_flux                 = physical_data[:,4] * parameters_dict["Heater Conversion"]
+    
+    else: 
+        with open(data_folder_file_path + "control.txt",'r') as control:
+            L = control.readline()
 
-    heater_flux                 = physical_data[:,4] * parameters_dict["Heater Conversion"]
 
-
+        if L=="":
+            with open(data_folder_file_path + "control.txt",'w') as control:
+                    control.write(str(len(physical_data_all)))
+        
+        with open(data_folder_file_path + "control.txt",'r') as control:
+                L = int(control.readline())
+        
+        heater_flux                 = physical_data_all.to_numpy()[L-11:L,4] * parameters_dict["Heater Conversion"]
 
     inlet_temps                 = physical_data[:,11]
     
