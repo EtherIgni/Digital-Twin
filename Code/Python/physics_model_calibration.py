@@ -7,6 +7,7 @@ import pandas as pd
 from matplotlib.widgets import Button, Slider
 import time
 from scipy.ndimage import convolve1d
+import pickle
 
 from Modules.update_temp_curve import update_Temperature
 
@@ -71,6 +72,7 @@ pump_controller_conversions = [2.8, 3.6, 0.75]
 physical_data               = pd.read_csv(filtered_data_file_path,index_col=False,header=None)
 physical_data               = np.array(physical_data)
 
+
 time_grid_real              = physical_data[:,0]
 num_time_intervals          = len(time_grid_real)*10
 time_grid, time_spacing     = np.linspace(np.min(time_grid_real),np.max(time_grid_real),num_time_intervals,retstep=True)
@@ -107,7 +109,7 @@ for i in range(7):
 
 
 
-calibrate_or_plot=True
+calibrate_or_plot=False
 show_geometry=False
 show_gif=False
 show_hist=False
@@ -365,7 +367,15 @@ def simulate_temps(parameters):
     constants_dict={"Water Density":density_water,
                    "Water Specific Heat":specific_heat_water}
     parameters_dict={"Exchange Coefficients":heat_exchange_coefficients,
-                    "Mix Percentages":mix_percentages}
+                    "Mix Percentages":mix_percentages,
+                    "Heater Conversion":heater_conversion}
+    
+    with open("Code/Scripts/physics_stuff/calibrated_model_information/geometry.pkl","wb") as file:
+        pickle.dump(geometry_dict,file)
+    with open("Code/Scripts/physics_stuff/calibrated_model_information/constants.pkl","wb") as file:
+        pickle.dump(constants_dict,file)
+    with open("Code/Scripts/physics_stuff/calibrated_model_information/parameters.pkl","wb") as file:
+        pickle.dump(parameters_dict,file)
 
     for step in range(1, num_time_intervals):
         nodal_temps=[None]*3
@@ -488,7 +498,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[316.93,0.00323,0.03616,1648.16,1039.43,0.262,0.5988,0.7426,0.0791730436,0.00809921437]
+parameters=[398.72927,0.00434,0.02699,1590.10831,1023.63564,0.03767,0.13507,0.99143,0.0712,0.00358]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0,0,0],[400,0.1,0.1,2000,2000,1,1,1,1,1]])
