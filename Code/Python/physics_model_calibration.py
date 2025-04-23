@@ -107,7 +107,7 @@ for i in range(7):
 
 
 
-calibrate_or_plot=False
+calibrate_or_plot=True
 show_geometry=False
 show_gif=False
 show_hist=False
@@ -346,102 +346,46 @@ def simulate_temps(parameters):
 
     comp_time_initial = time.time()
 
-    for step in range(1, num_time_intervals):
-        time_diff = time_grid[step] - time_grid[step-1]
+    geometry_dict={"Node Areas":area_curves,
+                   "Node Positions":flow_curves,
+                   "Loop Lengths":loop_lengths,
+                   "Number Exchangers":num_exchangers,
+                   "Number Loops":num_loops,
+                   "Exchanger Node Count":num_nodes_in_exchanger,
+                   "Exchanger Positions":heat_exchanger_positions,
+                   "Exchanger Main Length":heat_exchanger_main_length,
+                   "Tank Positions":tank_positions,
+                   "Tank Lengths":tank_lengths,
+                   "Thermometer Positions":thermo_probe_positions,
+                   "Exchanger Areas":heat_exchanger_areas,
+                   "Heater Length":heater_length,
+                   "Heater Areas":heater_area,
+                   "Number Tanks":num_tanks,
+                   "Loop of Tank":tank_loop}
+    constants_dict={"Water Density":density_water,
+                   "Water Specific Heat":specific_heat_water}
+    parameters_dict={"Exchange Coefficients":heat_exchange_coefficients,
+                    "Mix Percentages":mix_percentages}
 
-        #Heat Shift
-        for i in range(num_loops):
-            #Calculate fluid flow distance
-            travel_distances        = mass_flow_rates[i][step-1]*time_diff/(density_water*area_curves[i])
-            
-            #Rotate and re-interpolate temperature data
-            new_positions           = flow_curves[i]+travel_distances
-            if(i==2):
-                keep_indices        = np.where(new_positions<=loop_lengths[i])[0]
-                new_positions       = np.concat([[0],new_positions[keep_indices]])
-                interp_temps        = np.concat([[inlet_temps[step-1]],temp_curve[i][step-1][keep_indices]])
-                
-                sort_indices        = np.argsort(new_positions)
-                temp_curve[i][step] = np.interp(flow_curves[i],
-                                                new_positions[sort_indices],
-                                                interp_temps[sort_indices])
-            else:
-                sort_indices        = np.argsort(new_positions)
-                temp_curve[i][step] = np.interp(flow_curves[i],
-                                                new_positions[sort_indices],
-                                                temp_curve[i][step-1][sort_indices],
-                                                period=loop_lengths[i])
-        
-        
-        
-        #Heat Transfer
-        for i in range(num_exchangers):
-            exchanger_curve                             = np.linspace(0, heat_exchanger_main_length, num_nodes_in_exchanger[i])
-            heat_flux                                   = heat_exchange_coefficients[i]*(np.interp(exchanger_curve+heat_exchanger_positions[i,0],                           flow_curves[i],   temp_curve[i][step])-
-                                                                                         np.interp(heat_exchanger_positions[i,1]+heat_exchanger_main_length-exchanger_curve, flow_curves[i+1], temp_curve[i+1][step]))
-            
-            for j in range(2):
-                sub_grid_indices                        = np.where(np.logical_and(flow_curves[j+i]>heat_exchanger_positions[i,j],
-                                                                                flow_curves[j+i]<heat_exchanger_positions[i,j]+heat_exchanger_main_length))[0]
-                next_index                              = np.max(sub_grid_indices)+1 
-                
-                sub_grid                                = np.ones(sub_grid_indices.size+2)
-                sub_grid[0]                             = heat_exchanger_positions[i,j]
-                sub_grid[-1]                            = heat_exchanger_positions[i,j]+heat_exchanger_main_length
-                sub_grid[1:-1]                          = flow_curves[j+i][sub_grid_indices]
-                
-                matched_heat_flux                       = np.interp(sub_grid-heat_exchanger_positions[i,j], exchanger_curve, heat_flux)
-                if(j>0):
-                    matched_heat_flux                   = np.flip(matched_heat_flux)
-                
-                
-                exchanger_travel_distance           = np.ones(sub_grid.size-1)*time_diff/(density_water*heat_exchanger_areas[j])
-                if(mass_flow_rates[j+i][step-1]>0):
-                    transfer_areas                  = np.min(np.stack((exchanger_travel_distance,
-                                                            (sub_grid[1:]-sub_grid[:-1])/mass_flow_rates[j+i][step-1])),
-                                                            0)
-                else:
-                    transfer_areas                  = exchanger_travel_distance
-                
-                heat_transfer                       = ((matched_heat_flux[1:]+matched_heat_flux[:-1])/2) * transfer_areas * (j*2-1) / specific_heat_water
-                fill_indices                        = np.concat([sub_grid_indices,np.array([next_index])])
-                temp_curve[j+i][step][fill_indices] = temp_curve[j+i][step][fill_indices] + heat_transfer
-        
-        
-        
-        #Heater Heat Input
-        sub_grid_indices                    = np.where(np.logical_and(flow_curves[0]>0,
-                                                                flow_curves[0]<heater_length))[0]
-        next_index                          = np.max(sub_grid_indices)+1
-        fill_indices                        = np.concat([sub_grid_indices,np.array([next_index])])
-        
-        heater_travel_distance              = np.ones(fill_indices.size)*time_diff/(density_water*heater_area)
-        if(mass_flow_rates[0][step-1]>0):
-            grid_sizes                      = (flow_curves[0][fill_indices]-np.concat([[0], flow_curves[0][fill_indices][:-1]]))/mass_flow_rates[0][step-1]
-            heater_transfer_areas           = np.min(np.stack((heater_travel_distance,
-                                                    grid_sizes)),
-                                                    0)
-        else:
-            heater_transfer_areas           = heater_travel_distance
-        
-        heat_transfer                       = heater_flux[step-1] * transfer_areas / specific_heat_water
-        temp_curve[0][step][fill_indices]   = temp_curve[0][step][fill_indices] + heat_transfer
-        
-        
-        
-        #Logs temperature at probs
-        for i in range(num_loops):
-            simulated_probe_temps[i][step] = np.interp(thermo_probe_positions[i], flow_curves[i], temp_curve[i][step])
-            
-        
-        
-        #Tank Mixing
-        for i in range(num_tanks):
-            tank_indices=np.where(np.logical_and(flow_curves[tank_loop[i]]>tank_positions[i],
-                                                 flow_curves[tank_loop[i]]<=tank_positions[i]+tank_lengths[i]))[0]
-            drawn_temps=temp_curve[tank_loop[i]][step][tank_indices]*mix_percentages[i]
-            average_temps=np.mean(drawn_temps)*np.ones(drawn_temps.size)
-            temp_curve[tank_loop[i]][step][tank_indices]=temp_curve[tank_loop[i]][step][tank_indices]-drawn_temps+average_temps
+    for step in range(1, num_time_intervals):
+        nodal_temps=[None]*3
+        for i in range(3):
+            nodal_temps[i]=temp_curve[i][step-1]
+        mass_flow_rates_step=[None]*3
+        for i in range(3):
+            mass_flow_rates_step[i]=mass_flow_rates[i][step-1]
+        temp_curve_step,simulated_probes_step=update_Temperature(nodal_temps,
+                                                                 geometry_dict,
+                                                                 constants_dict,
+                                                                 parameters_dict,
+                                                                 inlet_temps[step-1],
+                                                                 time_grid[step]-time_grid[step-1],
+                                                                 heater_flux[step],
+                                                                 mass_flow_rates_step)
+        for i in range(3):
+            temp_curve[i][step]=temp_curve_step[i]
+        for i in range(3):
+            simulated_probe_temps[i][step]=simulated_probes_step[i]
 
 
 

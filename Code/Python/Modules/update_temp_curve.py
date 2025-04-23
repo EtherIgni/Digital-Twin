@@ -29,7 +29,7 @@ def update_Temperature(node_temperatures,
                        heater_flux,
                        mass_flow_rates):
     #Heat Shift
-    for i in range(num_loops):
+    for i in range(geometry_dict["Number Loops"]):
         #Calculate fluid flow distance
         travel_distances         = mass_flow_rates[i]*time_diff/(constants_dict["Water Density"]*geometry_dict["Node Areas"][i])
         
@@ -40,7 +40,7 @@ def update_Temperature(node_temperatures,
             new_positions        = np.concat([[0],
                                               new_positions[keep_indices]])
             interp_temps         = np.concat([[inlet_temp],
-                                              temp_curve[i][keep_indices]])
+                                              node_temperatures[i][keep_indices]])
             
             node_temperatures[i] = np.interp(geometry_dict["Node Positions"][i],
                                              new_positions,
@@ -109,12 +109,12 @@ def update_Temperature(node_temperatures,
     
     
     #Tank Mixing
-    for i in range(num_tanks):
-        tank_indices                                  = np.where(np.logical_and(geometry_dict["Node Positions"][tank_loop[i]]>geometry_dict["Tank Positions"][i],
-                                                                                geometry_dict["Node Positions"][tank_loop[i]]<=geometry_dict["Tank Positions"][i]+geometry_dict["Tank Lengths"][i]))[0]
-        drawn_temps                                   = node_temperatures[tank_loop[i]][tank_indices]*parameters_dict["Mix Percentages"][i]
+    for i in range(geometry_dict["Number Tanks"]):
+        tank_indices                                  = np.where(np.logical_and(geometry_dict["Node Positions"][geometry_dict["Loop of Tank"][i]]>geometry_dict["Tank Positions"][i],
+                                                                                geometry_dict["Node Positions"][geometry_dict["Loop of Tank"][i]]<=geometry_dict["Tank Positions"][i]+geometry_dict["Tank Lengths"][i]))[0]
+        drawn_temps                                   = node_temperatures[geometry_dict["Loop of Tank"][i]][tank_indices]*parameters_dict["Mix Percentages"][i]
         average_temps                                 = np.mean(drawn_temps)*np.ones(drawn_temps.size)
-        node_temperatures[tank_loop[i]][tank_indices] = node_temperatures[tank_loop[i]][tank_indices]-drawn_temps+average_temps
+        node_temperatures[geometry_dict["Loop of Tank"][i]][tank_indices] = node_temperatures[geometry_dict["Loop of Tank"][i]][tank_indices]-drawn_temps+average_temps
         
     #Logs temperature at probs
     simulated_probe_temps        = [None]*geometry_dict["Number Loops"]
