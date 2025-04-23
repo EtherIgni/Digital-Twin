@@ -65,7 +65,7 @@ def anomaly_detection(data_folder_file_path):
     anomalies_large_probe = np.zeros_like(anomalies_range, dtype=bool)
     
     residuals_percent = np.abs(residuals) / physical_temps
-    percent_threshold = 0.075  # 7.5% | subject to change
+    percent_threshold = 0.1  # 10% | subject to change
     
     for j in range(anomalies_large_probe.shape[1]):
         for i in range(0, len(anomalies_large_probe[:, j])):
