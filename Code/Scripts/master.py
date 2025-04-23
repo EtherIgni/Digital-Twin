@@ -8,6 +8,7 @@ import global_run_number as g
 import subprocess
 import psutil
 
+
 data_file_path_parent = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop"
 
 def is_plot_running(script_name=r"C:\Users\DAQ-User\Documents\Repos\Digital-Twin\Code\Scripts\GUI_plotting.py"):

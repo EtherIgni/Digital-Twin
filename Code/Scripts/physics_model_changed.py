@@ -75,6 +75,7 @@ def simulate_Data(data_folder_file_path,Heater,Pump1,Pump2,Wall):
             with open(data_folder_file_path + "control.txt",'r') as control:
                  L = control.readline()
 
+
             if L=="":
                 with open(data_folder_file_path + "control.txt",'w') as control:
                      control.write(str(len(physical_data_all)))
