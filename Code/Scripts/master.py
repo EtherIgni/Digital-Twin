@@ -27,10 +27,11 @@ def master_Control(run_number,Heater, Pump1, Pump2, Wall):
     data_file_path=data_file_path_parent+"/Run "+str(run_number)+"/"
     # unfiltered_data = np.genfromtxt(data_file_path+"raw_data.txt",delimiter=",")
     # if(not(np.min(unfiltered_data[:,0])==0)):
+    
     if(os.path.isfile(data_file_path+"filtered_data.csv")):
         # Step 1: Run your data pipeline
         filter_Data(data_file_path)
-        simulate_Data(data_file_path)
+        simulate_Data(data_file_path,Heater,Pump1,Pump2,Wall)
         anomaly_detection(data_file_path)
 
         # Step 2: Launch GUI if not already running
@@ -42,4 +43,3 @@ def master_Control(run_number,Heater, Pump1, Pump2, Wall):
         filter_Data(data_file_path)
 
 #is_plot_running(script_name=r"C:\Users\DAQ-User\Documents\Repos\Digital-Twin\Code\Scripts\GUI_plotting.py")
-#master_Control(19,1,1,1,1)
