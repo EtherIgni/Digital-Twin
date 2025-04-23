@@ -105,7 +105,7 @@ for i in range(7):
 
 
 
-calibrate_or_plot=True
+calibrate_or_plot=False
 show_geometry=False
 show_gif=False
 show_hist=False
@@ -542,7 +542,7 @@ def simulate_temps(parameters):
     
 
 
-parameters=[154.32904,0.00413,0.02390,1678.9,1116.5,0.996,0.137,0.1065,0.0791730436,0.00809921437]
+parameters=[154.32904,0.00413,0.02390,1678.9,1116.5,0.01,0.9,0.01,0.0791730436,0.00809921437]
 
 if(calibrate_or_plot):
     results=least_squares(simulate_temps, parameters, bounds=[[0,0,0,0,0,0,0,0,0,0],[400,0.1,0.1,2000,2000,1,1,1,1,1]])
