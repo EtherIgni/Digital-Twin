@@ -52,19 +52,14 @@ def simulate_Data(data_folder_file_path):
     with open(os.path.dirname(os.path.realpath(__file__))+"/physics_stuff/calibrated_model_information/parameters.pkl","rb") as file:
             parameters_dict = pickle.load(file)
     
-    num_to_pull=100
-    steps_per_pull=10
+    num_to_pull                 = 100
+    steps_per_pull              = 10
     
-    Gal_min_to_Kg_s           = 0.0466
+    Gal_min_to_Kg_s             = 0.0466
     
-    physical_data_all               = pd.read_csv(data_folder_file_path+"filtered_data.csv", index_col=False, header=None)
-    physical_data               = np.array(physical_data_all)
-    # print(physical_data_all.shape)
-    # print(int(physical_data_all.shape[0]/num_to_pull))
-    # for set_100 in range(1,int(physical_data_all.shape[0]/num_to_pull)-1):
-        # physical_data               = physical_data_all[(set_100*num_to_pull-1):(set_100+1)*num_to_pull]
-        # print(physical_data.shape)
-    num_to_pull=physical_data.shape[0]-1
+    physical_data_all           = pd.read_csv(data_folder_file_path+"filtered_data.csv", index_col=False, header=None)
+    physical_data_all           = np.array(physical_data_all)[-num_to_pull+1:]
+    physical_data               = physical_data_all[(set_100*num_to_pull-1):(set_100+1)*num_to_pull]
 
     time_grid                   = physical_data[:,0]
 
@@ -92,7 +87,7 @@ def simulate_Data(data_folder_file_path):
             
     else:
         initial_temps              = [None]*3
-        initial_temps[0]           = np.array([physical_data[0,6],  physical_data[0,7], physical_data[0,8], physical_data[0,5]])
+        initial_temps[0]           = np.array([physical_data[0,8],  physical_data[0,7], physical_data[0,6], physical_data[0,5]])
         initial_temps[1]           = np.array([physical_data[0,9],  physical_data[0,10]])
         initial_temps[2]           = np.array([physical_data[0,11], physical_data[0,12]])
         
@@ -133,7 +128,7 @@ def simulate_Data(data_folder_file_path):
         simulated_data[step,5] = probe_temps[1][0]
         simulated_data[step,6] = probe_temps[1][1]
         simulated_data[step,7] = probe_temps[2][0]
-            
+        
 
 
 
@@ -145,47 +140,3 @@ def simulate_Data(data_folder_file_path):
 
     data_frame = pd.DataFrame.from_records(temp_curve)
     data_frame.to_csv(data_folder_file_path+"model_save.csv")
-
-simulate_Data("Code/Data/Run 5/")
-
-simulated_data               = pd.read_csv("Code/Data/Run 5/"+"simulated_data.csv", index_col=False, header=None)
-simulated_data               = np.array(simulated_data)
-physical_data                = pd.read_csv("Code/Data/Run 5/"+"filtered_data.csv", index_col=False, header=None)
-physical_data                = np.array(physical_data)
-
-
-fix, ax   = plt.subplots(4)
-
-ax[0].plot(physical_data[1:,0], simulated_data[:,1], linestyle="dashed", label="Simulated Temp 1", color="green")
-ax[0].plot(physical_data[1:,0], simulated_data[:,2], linestyle="dashed", label="Simulated Temp 2", color="blue")
-ax[0].plot(physical_data[1:,0], simulated_data[:,3], linestyle="dashed", label="Simulated Temp 3", color="orange")
-ax[0].plot(physical_data[1:,0], simulated_data[:,4], linestyle="dashed", label="Simulated Temp 4", color="red")
-
-ax[1].plot(physical_data[1:,0], simulated_data[:,5], linestyle="dashed", label="Simulated Temp 1", color="green")
-ax[1].plot(physical_data[1:,0], simulated_data[:,6], linestyle="dashed", label="Simulated Temp 2", color="red")
-
-ax[2].plot(physical_data[1:,0], simulated_data[:,7], linestyle="dashed", label="Simulated Temp 2", color="red")
-
-
-ax[0].plot(physical_data[:,0], physical_data[:,5], label="True Temp  1", color="green")
-ax[0].plot(physical_data[:,0], physical_data[:,6], label="True Temp  2", color="blue")
-ax[0].plot(physical_data[:,0], physical_data[:,7], label="True Temp  3", color="orange")
-ax[0].plot(physical_data[:,0], physical_data[:,8], label="True Temp  4", color="red")
-
-ax[1].plot(physical_data[:,0], physical_data[:,9], label="True Temp  1", color="green")
-ax[1].plot(physical_data[:,0], physical_data[:,10], label="True Temp  2", color="red")
-
-ax[2].plot(physical_data[:,0], physical_data[:,11], label="True Temp  1", color="green")
-ax[2].plot(physical_data[:,0], physical_data[:,12], label="True Temp  2", color="red")
-
-ax[3].plot(physical_data[:,0], physical_data[:,1], label="Pump input 1", color="green")
-ax[3].plot(physical_data[:,0], physical_data[:,2], label="Pump input 2", color="blue")
-ax[3].plot(physical_data[:,0], physical_data[:,3], label="Pump input 3", color="red")
-ax[3].plot(physical_data[:,0], physical_data[:,4], label="Heater input", color="orange")
-
-ax[0].legend()
-ax[1].legend()
-ax[2].legend()
-ax[3].legend()
-
-plt.show()
