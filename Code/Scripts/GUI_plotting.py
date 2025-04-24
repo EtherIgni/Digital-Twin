@@ -8,12 +8,13 @@ import sys
 import traceback
 import numpy as np
 import global_run_number as g
+from matplotlib.patches import Patch
 
 # Set Matplotlib backend
 plt.switch_backend("Agg")  # Avoid some GUI conflicts
 
 # File paths
-data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/Run 1"
+data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/bypass_both_valves"
 
 
 #data_folder= data_folder + str({run_number})
@@ -48,14 +49,21 @@ class AnomalyPlotterApp:
 
                 raise FileNotFoundError("One or more data files are missing.")
 
+            # Subtract the first value in the first column [0, 0] for each file
             physical_data = pd.read_csv(physical_data_path, header=None).to_numpy()
+            physical_data[:, 0] -= physical_data[0, 0]
 
-            model_data = pd.read_csv(model_data_path, header=None).to_numpy()[:,:8]
+            model_data = pd.read_csv(model_data_path, header=None).to_numpy()[:, :8]
+            model_data[:, 0] -= model_data[0, 0]
 
             anomaly_data = pd.read_csv(anomaly_data_path, header=None).to_numpy()
+            anomaly_data[:, 0] -= anomaly_data[0, 0]
+
+
+
 
             time_physical = physical_data[:, 0]
-            time_model = model_data[:, 0]
+
 
             current_time = time_physical[-1]
 
@@ -89,7 +97,7 @@ class AnomalyPlotterApp:
                     end_idx = i - 1
                     self.ax.axvspan(anomaly_data[start_idx, 0], anomaly_data[end_idx, 0], color='red', alpha=0.3)
             if is_anomaly:
-                self.ax.axvspan(anomaly_data[start_idx, 0], anomaly_data[-1, 0], color='red', alpha=0.3)
+                self.ax.axvspan(anomaly_data[start_idx, 0], anomaly_data[-1, 0], color='red', alpha=0.3, label= "Anomaly")
 
             # Labels and legend
             self.ax.set_title("Anomaly Detection", fontsize=20)
@@ -97,9 +105,12 @@ class AnomalyPlotterApp:
             self.ax.set_ylabel("Temperature (C)", fontsize=16)
             self.ax.tick_params(axis='both', labelsize=14)
             from matplotlib.lines import Line2D
-            solid_line= Line2D([0],[0], color= 'black', linestyle='-', label='Physical')
-            dotted_line= Line2D([0],[0], color= 'black', linestyle='--', label='Model')
-            self.ax.legend(handles=[solid_line, dotted_line], fontsize=12)
+            solid_line= Line2D([0],[0], color= 'black', linestyle='-', label='Measured Data')
+            dotted_line= Line2D([0],[0], color= 'black', linestyle='--', label='Physics Model')
+            highlight_patch = Patch(color='red',alpha=.3, label='Anomaly')
+
+# Add everything to the legend
+            self.ax.legend(handles=[solid_line, dotted_line, highlight_patch], fontsize=12)
 
             # Refresh the plot
             self.canvas.draw_idle()
