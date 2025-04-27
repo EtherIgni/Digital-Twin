@@ -12,9 +12,16 @@ from matplotlib.patches import Patch
 
 # Set Matplotlib backend
 plt.switch_backend("Agg")  # Avoid some GUI conflicts
+import sys
+import os
+
+# Default fallback (optional, or set to None if you want to require an argument)
+
+print("[GUI_plotting.py] sys.argv =", sys.argv)
+data_folder=str(sys.argv[1])
 
 # File paths
-data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/bypass_both_valves"
+#data_folder = "C:/Users/DAQ-User/Documents/LabVIEW Data/3Loop/Run 1"
 
 
 #data_folder= data_folder + str({run_number})
@@ -51,10 +58,11 @@ class AnomalyPlotterApp:
 
             # Subtract the first value in the first column [0, 0] for each file
             physical_data = pd.read_csv(physical_data_path, header=None).to_numpy()
-            physical_data[:, 0] -= physical_data[0, 0]
+
 
             model_data = pd.read_csv(model_data_path, header=None).to_numpy()[:, :8]
             model_data[:, 0] -= model_data[0, 0]
+            physical_data[:, 0] -= physical_data[0, 0]
 
             anomaly_data = pd.read_csv(anomaly_data_path, header=None).to_numpy()
             anomaly_data[:, 0] -= anomaly_data[0, 0]
