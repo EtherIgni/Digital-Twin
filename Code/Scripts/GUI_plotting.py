@@ -61,19 +61,12 @@ class AnomalyPlotterApp:
 
 
             model_data = pd.read_csv(model_data_path, header=None).to_numpy()[:, :8]
-            model_data[:, 0] -= model_data[0, 0]
-            physical_data[:, 0] -= physical_data[0, 0]
 
+            physical_data[:, 0] -= model_data[0, 0]
+            physical_data = physical_data[20:,:]
+            model_data[:, 0] -= model_data[0, 0]
             anomaly_data = pd.read_csv(anomaly_data_path, header=None).to_numpy()
             anomaly_data[:, 0] -= anomaly_data[0, 0]
-
-
-
-
-            time_physical = physical_data[:, 0]
-
-
-            current_time = time_physical[-1]
 
 
             self.ax.clear()

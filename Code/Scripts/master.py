@@ -46,4 +46,3 @@ def master_Control(run_number,Heater, Pump1, Pump2, Wall):
         filter_Data(data_file_path)
 
 #is_plot_running(script_name=r"C:\Users\DAQ-User\Documents\Repos\Digital-Twin\Code\Scripts\GUI_plotting.py")
-master_Control(1,0, 0, 0, 0)

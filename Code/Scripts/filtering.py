@@ -18,7 +18,7 @@ def filter_Data(data_folder_file_path):
     with open(data_folder_file_path + "control.txt",'r') as control:
             L = control.readline()
     if L =="":            
-        filtered_data[:,4]     = np.ones(unfiltered_data.shape[0])*np.max(unfiltered_data[:,4])
+        filtered_data[-10:,4]     = np.ones(10)*np.max(unfiltered_data[-10:,4]) #this needs to be fixed. now only the last 10 is ever saved
     else: 
         filtered_data[:,4]     = np.ones(unfiltered_data.shape[0])*np.max(unfiltered_data[:int(L),4])
     
@@ -30,6 +30,5 @@ def filter_Data(data_folder_file_path):
     
     
     data_frame                          = pd.DataFrame.from_records(filtered_data)
-    data_frame.to_csv(data_folder_file_path+"filtered_data_new.csv",header=False,index=False)
+    data_frame.to_csv(data_folder_file_path+"filtered_data.csv",header=False,index=False)
     
-filter_Data(r'C:/Users/james/Documents/repo\Digital-Twin/Code/Data/heater_increase/')
