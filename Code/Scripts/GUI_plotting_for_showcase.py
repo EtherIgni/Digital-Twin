@@ -53,11 +53,11 @@ class AnomalyPlotterApp:
 
         # Align time axes
         self.full_physical_data[:, 0] -= self.full_model_data[0, 0]
-        self.full_physical_data = self.full_physical_data[320:1020,:]
+        self.full_physical_data = self.full_physical_data[320:520,:]
         self.full_model_data[:, 0] -= self.full_model_data[0, 0]
-        self.full_model_data = self.full_model_data[300:1020, :]
+        self.full_model_data = self.full_model_data[300:500, :]
         self.full_anomaly_data[:, 0] -= self.full_anomaly_data[0, 0]
-        self.full_anomaly_data = self.full_anomaly_data[300:1000, :]
+        self.full_anomaly_data = self.full_anomaly_data[300:500, :]
         print(self.full_physical_data[0, 0])
         print(self.full_model_data[0, 0])
         print(self.full_anomaly_data[0, 0])
@@ -166,7 +166,7 @@ class AnomalyPlotterApp:
                 )
 
             # Labels and legend
-            self.ax.set_title("Anomaly Detection", fontsize=20)
+            self.ax.set_title("Both HX Bypass", fontsize=20)
             self.ax.text(
                 0.87, 1.01,  # Position: x=0.5 (centered), y=1.02 (slightly above the plot)
                 "10x actual update speed",  # Text to display
@@ -186,7 +186,7 @@ class AnomalyPlotterApp:
             dotted_line = Line2D(
                 [0], [0], color="black", linestyle="--", label="Physics Model"
             )
-            highlight_patch = Patch(color="red", alpha=0.3, label="Anomaly")
+            highlight_patch = Patch(color="red", alpha=0.3, label="Anomaly Detected")
 
             # Add everything to the legend
             self.ax.legend(
